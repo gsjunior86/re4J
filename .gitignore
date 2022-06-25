@@ -1,0 +1,9 @@
+dist/
+build/classes
+build/empty
+build/generated-sources/
+build/assets.jar
+*.log
+*.so
+*.html
+*.jnlp

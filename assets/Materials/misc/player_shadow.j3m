@@ -1,0 +1,13 @@
+Material My Material : Common/MatDefs/Light/Lighting.j3md {
+     MaterialParameters {
+        VertexLighting : false
+        Diffuse : 0.62352943 0.62352943 0.62352943 1.0
+        AlphaMap : "Textures/misc/shadow_a.png"
+     }
+    AdditionalRenderState {
+      Blend Alpha
+      AlphaTestFalloff 0.0
+      DepthTest Off
+      Wireframe Off
+    }
+}

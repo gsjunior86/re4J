@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Ant-Version: Apache Ant 1.10.4
+Created-By: 11.0.6+10 (AdoptOpenJDK)
+Codebase: /home/gsjunior/git/re4J/dist
+Application-Library-Allowable-Codebase: /home/gsjunior/git/re4J/dist
+Caller-Allowable-Codebase: /home/gsjunior/git/re4J/dist
+Permissions: sandbox
+Application-Name: RE4j
+
