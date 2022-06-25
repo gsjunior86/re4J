@@ -77,11 +77,13 @@ public class Main extends SimpleApplication implements ActionListener{
         
         
         AppSettings settings = new AppSettings(true);
-        //settings.setFullscreen(true);
+        settings.setFullscreen(false);
         settings.put("Width", 1280);
         settings.put("Height", 720);
         settings.put("VSync", true);
         settings.put("Samples", 4);
+        
+        
 
         app.setSettings(settings);
         app.setDisplayStatView(false);
