@@ -9,9 +9,6 @@ import br.gsj.re4j.main.Main;
 import com.jme3.anim.AnimComposer;
 import com.jme3.anim.tween.Tween;
 import com.jme3.anim.tween.Tweens;
-import static com.jme3.anim.tween.Tweens.callMethod;
-import static com.jme3.anim.tween.Tweens.delay;
-import static com.jme3.anim.tween.Tweens.sequence;
 import com.jme3.anim.tween.action.Action;
 import com.jme3.asset.AssetManager;
 import com.jme3.audio.AudioData.DataType;
@@ -20,8 +17,7 @@ import com.jme3.input.InputManager;
 import com.jme3.input.KeyInput;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.KeyTrigger;
-import java.util.ArrayList;
-import java.util.List;
+
 
 /**
  *

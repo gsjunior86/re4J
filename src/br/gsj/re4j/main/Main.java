@@ -14,9 +14,6 @@ import com.jme3.bullet.control.BetterCharacterControl;
 import com.jme3.bullet.control.RigidBodyControl;
 import com.jme3.bullet.control.GhostControl;
 import com.jme3.bullet.util.CollisionShapeFactory;
-import com.jme3.input.KeyInput;
-import com.jme3.input.controls.ActionListener;
-import com.jme3.input.controls.KeyTrigger;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.post.FilterPostProcessor;
@@ -30,15 +27,14 @@ import com.jme3.ui.Picture;
 import java.util.List;
 import br.gsj.re4j.utils.Utils;
 import com.jme3.anim.AnimComposer;
-import com.jme3.anim.tween.action.Action;
-import com.jme3.light.PointLight;
+import com.jme3.audio.AudioData;
+import com.jme3.audio.AudioNode;
+
 import com.jme3.material.Material;
 import com.jme3.math.FastMath;
-import com.jme3.post.ssao.SSAOFilter;
+
 import com.jme3.renderer.queue.RenderQueue.ShadowMode;
 import com.jme3.scene.Node;
-import com.jme3.shadow.EdgeFilteringMode;
-import com.jme3.shadow.PointLightShadowRenderer;
 import com.jme3.system.AppSettings;
 
 /**
@@ -66,7 +62,7 @@ public class Main extends SimpleApplication{
     private AnimComposer playerAnimComposer;
 
     
-    
+    private AudioNode backgroundMusic = new AudioNode(assetManager, "Sounds/sfx/FS01_00001.ogg",AudioData.DataType.Buffer);
     
     
     private float walkingSpeed = 5f;
