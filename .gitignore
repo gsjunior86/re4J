@@ -3,6 +3,7 @@ build/classes
 build/empty
 build/generated-sources/
 build/assets.jar
+blender/
 *.log
 *.so
 *.html
