@@ -5,6 +5,7 @@
  */
 package br.gsj.re4j.main;
 
+import br.gsj.re4j.anim.PlayerMoveControl;
 import br.gsj.re4j.physics.SceneChangerControl;
 import com.jme3.app.SimpleApplication;
 import com.jme3.bullet.BulletAppState;
@@ -29,8 +30,10 @@ import com.jme3.ui.Picture;
 import java.util.List;
 import br.gsj.re4j.utils.Utils;
 import com.jme3.anim.AnimComposer;
+import com.jme3.anim.tween.action.Action;
 import com.jme3.light.PointLight;
 import com.jme3.material.Material;
+import com.jme3.math.FastMath;
 import com.jme3.post.ssao.SSAOFilter;
 import com.jme3.renderer.queue.RenderQueue.ShadowMode;
 import com.jme3.scene.Node;
@@ -42,13 +45,10 @@ import com.jme3.system.AppSettings;
  *
  * @author gsjunior
  */
-public class Main extends SimpleApplication implements ActionListener{
+public class Main extends SimpleApplication{
     
     
-    private boolean debugMode = false;
-
-    private boolean forward = false, backward = false,
-            leftRotate = false, rightRotate = false;
+    public static boolean DEBUG_MODE = false;
 
     private BulletAppState bulletAppState;
     private BetterCharacterControl playerControl;
@@ -56,19 +56,24 @@ public class Main extends SimpleApplication implements ActionListener{
     private Spatial currentScene;
     private Spatial player;
     
+    
+    
     private Picture backgroundPicture;
     private CameraNode camNode;
+    
+    private PlayerMoveControl playerMoveControl;
 
     private AnimComposer playerAnimComposer;
-    
-    public static final int SHADOWMAP_SIZE = 2048;
-    
-    final private Vector3f playerWalkDirection = new Vector3f(0,0,0);
-    final private Vector3f lastDir = new Vector3f();
-    
-    
 
-    private static final float MOVE_SPEED = 0.05F;
+    
+    
+    
+    
+    private float walkingSpeed = 5f;
+    final private Vector3f playerWalkDirection = new Vector3f(0,0,0);
+    private Vector3f classicMoveDir = new Vector3f(0,0,1);
+
+
 
     public static void main(String[] args) {
         Main app = new Main();
@@ -92,58 +97,79 @@ public class Main extends SimpleApplication implements ActionListener{
 
     }
 
-    private void initKeys() {
-        inputManager.addMapping("Rotate Left",
-                new KeyTrigger(KeyInput.KEY_A),
-                new KeyTrigger(KeyInput.KEY_LEFT));
-        inputManager.addMapping("Rotate Right",
-                new KeyTrigger(KeyInput.KEY_D),
-                new KeyTrigger(KeyInput.KEY_RIGHT));
-        inputManager.addMapping("Walk Forward",
-                new KeyTrigger(KeyInput.KEY_W),
-                new KeyTrigger(KeyInput.KEY_UP));
-        inputManager.addMapping("Walk Backward",
-                new KeyTrigger(KeyInput.KEY_S),
-                new KeyTrigger(KeyInput.KEY_DOWN));
-
-
-        inputManager.addListener(this, "Rotate Left");
-        inputManager.addListener(this, "Rotate Right");
-        inputManager.addListener(this, "Walk Forward");
-        inputManager.addListener(this, "Walk Backward");
-
+    public void traditionalPlayerMove(){
+        Vector3f dir = classicMoveDir.clone().multLocal(walkingSpeed);
+        
+        playerWalkDirection.set(0,0,0);
+        
+        int g = 2;
+        
+        if (playerMoveControl.isForward()) {
+            playerWalkDirection.addLocal(dir);
+            playerWalkDirection.set(dir);
+            playerControl.setViewDirection(classicMoveDir);
+            playerControl.setWalkDirection(playerWalkDirection);
+        }
+        else if (playerMoveControl.isBackward()) {
+            playerWalkDirection.addLocal(dir.negate());
+            playerWalkDirection.set(dir.negate());
+            playerControl.setViewDirection(classicMoveDir.negate());
+            playerControl.setWalkDirection(playerWalkDirection);
+        }
+        else if(playerMoveControl.isRightRotate()){
+            Quaternion pitch = new Quaternion();
+            pitch.fromAngleAxis(FastMath.PI * g / 180, Vector3f.UNIT_Y);
+            classicMoveDir.set(pitch.mult(classicMoveDir));
+            playerControl.setViewDirection(classicMoveDir);
+            
+        }
+        else if(playerMoveControl.isLeftRotate()){
+           Quaternion pitch = new Quaternion();
+            pitch.fromAngleAxis(-1* (FastMath.PI * g / 180), Vector3f.UNIT_Y);
+            classicMoveDir.set(pitch.mult(classicMoveDir));
+            playerControl.setViewDirection(classicMoveDir); 
+        }else
+            playerControl.setWalkDirection(playerWalkDirection);
+        
+        
+        
     }
-
-    @Override
-    public void simpleUpdate(float tpf) {
+    
+    public void relativeCamPlayerMove(){
         //System.out.println(playerControl.getViewDirection());
-        Vector3f camDir = cam.getDirection().clone().multLocal(3.5f);
-        Vector3f camLeft = cam.getLeft().clone().multLocal(3.5f);
+        Vector3f camDir = cam.getDirection().clone().multLocal(walkingSpeed);
+        Vector3f camLeft = cam.getLeft().clone().multLocal(walkingSpeed);
         camDir.y = 0;
         camLeft.y = 0;
 
         playerWalkDirection.set(0, 0, 0);
         
-
-        if (forward) {
+        if (playerMoveControl.isForward()) {
             playerWalkDirection.addLocal(camDir);
             playerControl.setViewDirection(playerWalkDirection);
         }
-        if (backward) {
+        if (playerMoveControl.isBackward()) {
             playerWalkDirection.addLocal(camDir.negate());
             playerControl.setViewDirection(playerWalkDirection);
         }
         
-        if(rightRotate){
+        if(playerMoveControl.isRightRotate()){
             playerWalkDirection.addLocal(camLeft.negate());
             playerControl.setViewDirection(playerWalkDirection);            
         }
-        if(leftRotate){
+        if(playerMoveControl.isLeftRotate()){
            playerWalkDirection.addLocal(camLeft);
            playerControl.setViewDirection(playerWalkDirection);
         }
-
       playerControl.setWalkDirection(playerWalkDirection);
+    }
+    
+
+    @Override
+    public void simpleUpdate(float tpf) {
+              
+       traditionalPlayerMove();
+       //relativeCamPlayerMove();
       
     }
 
@@ -153,47 +179,12 @@ public class Main extends SimpleApplication implements ActionListener{
               
         super.update();
         
-        if(debugMode){
+        if(DEBUG_MODE){
             System.out.println("Location: " + cam.getLocation());
             System.out.println("Rotation: " + cam.getRotation());
         }
     }
 
-    @Override
-    public void onAction(String binding, boolean value, float tpf) {
-        if(!debugMode){
-            if(!value)
-                playerAnimComposer.setCurrentAction("breath");
-            else
-                playerAnimComposer.setCurrentAction("walk");
-            if (binding.equals("Rotate Left")) {
-                if (value) {
-                    leftRotate = true;
-                } else {
-                    leftRotate = false;
-                }
-            } else if (binding.equals("Rotate Right")) {
-                if (value) {
-                    rightRotate = true;
-                } else {
-                    rightRotate = false;
-                }
-            } else if (binding.equals("Walk Forward")) {
-                if (value) {
-                    forward = true;
-                } else {
-                    forward = false;
-                }
-            } else if (binding.equals("Walk Backward")) {
-                if (value) {
-                    backward = true;
-                } else {
-                    backward = false;
-                }
-            }
-
-        }
-    }
 
     private void createCharacter() {
         
@@ -219,11 +210,13 @@ public class Main extends SimpleApplication implements ActionListener{
         
 
         player.addControl(playerControl);
+        
+        playerControl.setViewDirection(classicMoveDir);
 
         bulletAppState.getPhysicsSpace().add(playerControl);
         bulletAppState.getPhysicsSpace().add(player);
         playerControl.setEnabled(true);
-
+        playerMoveControl = new PlayerMoveControl(playerAnimComposer, inputManager,assetManager);
         
     }
     
@@ -240,7 +233,7 @@ public class Main extends SimpleApplication implements ActionListener{
         camNode.setLocalTranslation(loc);
         camNode.setLocalRotation(rot);
         
-        if(!debugMode)
+        if(!DEBUG_MODE)
             rootNode.attachChild(camNode);        
         
         currentScene = assetManager.loadModel("Scenes/rpd/stairwell.j3o");
@@ -254,13 +247,11 @@ public class Main extends SimpleApplication implements ActionListener{
         
         
         
-        
-        
         for (Spatial floor : listFloors){
             CollisionShape cs = CollisionShapeFactory.createBoxShape(floor);
             RigidBodyControl rbc = new RigidBodyControl(cs,0.0f);
             floor.addControl(rbc);
-            if(debugMode){
+            if(DEBUG_MODE){
                 floor.setMaterial(mat);            
             }else{
                 floor.setCullHint(Spatial.CullHint.Always);
@@ -274,7 +265,7 @@ public class Main extends SimpleApplication implements ActionListener{
             CollisionShape cs = CollisionShapeFactory.createBoxShape(wall);
             RigidBodyControl rbc = new RigidBodyControl(cs,0.0f);
             wall.addControl(rbc);
-            if(debugMode)
+            if(DEBUG_MODE)
                 wall.setMaterial(mat);
             else
                 wall.setCullHint(Spatial.CullHint.Always);
@@ -296,7 +287,7 @@ public class Main extends SimpleApplication implements ActionListener{
 
     }
     
-    private void setupLightAndShadow(){
+    /*private void setupLightAndShadow(){
         
         int lightCount = currentScene.getLocalLightList().size();
         
@@ -313,7 +304,7 @@ public class Main extends SimpleApplication implements ActionListener{
             
         }
         
-    }
+    }*/
 
     private Picture setupBackground(String img) {
         Picture p = new Picture("background");
@@ -348,12 +339,12 @@ public class Main extends SimpleApplication implements ActionListener{
         pv.addProcessor(fpp);
         
        
-        initKeys();
+        //initKeys();
 
         flyCam.setMoveSpeed(10);
         flyCam.setEnabled(false);
         
-        if(debugMode)
+        if(DEBUG_MODE)
             flyCam.setEnabled(true);
         // You must add a light to make the model visible
         /*DirectionalLight sun = new DirectionalLight();
@@ -364,6 +355,7 @@ public class Main extends SimpleApplication implements ActionListener{
         viewPort.setClearFlags(false, true, true);
         createScene();
         createCharacter();
+        
         //setupLightAndShadow();
         rootNode.setShadowMode(ShadowMode.CastAndReceive);
         
