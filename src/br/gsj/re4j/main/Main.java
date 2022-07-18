@@ -29,6 +29,7 @@ import br.gsj.re4j.utils.Utils;
 import com.jme3.anim.AnimComposer;
 import com.jme3.audio.AudioData;
 import com.jme3.audio.AudioNode;
+import com.jme3.audio.Environment;
 
 import com.jme3.material.Material;
 import com.jme3.math.FastMath;
@@ -62,7 +63,7 @@ public class Main extends SimpleApplication{
     private AnimComposer playerAnimComposer;
 
     
-    private AudioNode backgroundMusic = new AudioNode(assetManager, "Sounds/sfx/FS01_00001.ogg",AudioData.DataType.Buffer);
+    private AudioNode backgroundMusic;
     
     
     private float walkingSpeed = 5f;
@@ -186,7 +187,7 @@ public class Main extends SimpleApplication{
         
         //rootNode.getChild("claire").removeFromParent();
 
-        String charSelection = Utils.charSelection();
+        /*String charSelection = Utils.charSelection();
         Node spawnPlayerNode = (Node) rootNode.getChild("player_spawn_1");
         if(charSelection.equals("Leon")){
             spawnPlayerNode.getChild("player_claire").removeFromParent();
@@ -194,7 +195,11 @@ public class Main extends SimpleApplication{
         }else if(charSelection.equals("Claire")){
             spawnPlayerNode.getChild("player_leon").removeFromParent();
             player = spawnPlayerNode.getChild("player_claire");
-        }
+        }*/
+        
+        Node spawnPlayerNode = (Node) rootNode.getChild("player_spawn_1");
+        spawnPlayerNode.getChild("player_claire").removeFromParent();
+        player = spawnPlayerNode.getChild("player_leon");
                 
         player.setShadowMode(RenderQueue.ShadowMode.CastAndReceive);
         
@@ -355,7 +360,12 @@ public class Main extends SimpleApplication{
         //setupLightAndShadow();
         rootNode.setShadowMode(ShadowMode.CastAndReceive);
         
-        
+        backgroundMusic = new AudioNode(assetManager, "Sounds/background_music/MAIN07.SAP.wav",AudioData.DataType.Stream);
+        backgroundMusic.setLooping(true);
+        backgroundMusic.setPositional(false);
+        backgroundMusic.setDirectional(false);
+        backgroundMusic.play();
+        audioRenderer.setEnvironment(new Environment ( new float[]{ 2, 1.9f, 1f, -1000, -454, 0, 0.40f, 0.83f, 1f, -1646, 0.002f, 0f, 0f, 0f, 53, 0.003f, 0f, 0f, 0f, 0.250f, 0f, 0.250f, 0f, -5f, 5000f, 250f, 0f, 0x3f} ));
         
        // viewPort.addProcessor(fpp);
         

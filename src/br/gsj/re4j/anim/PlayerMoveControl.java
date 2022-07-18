@@ -50,6 +50,13 @@ public class PlayerMoveControl implements ActionListener{
         step1  = new AudioNode(assetManager, "Sounds/sfx/FS01_00001.ogg",DataType.Buffer);
         step2  = new AudioNode(assetManager, "Sounds/sfx/FS01_00002.ogg",DataType.Buffer);
         
+       //step1.setReverbEnabled(true);
+       step1.setPositional(true);
+       step1.setDirectional(true);
+       
+       //step2.setReverbEnabled(true);
+       step2.setPositional(true);
+       step2.setDirectional(true);
         //step1.setLooping(true);
         //step2.setLooping(true);
         
