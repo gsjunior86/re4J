@@ -31,11 +31,11 @@ public class PlayerMoveControl implements ActionListener{
     private final InputManager inputManager;
     private final AssetManager assetManager;
     
-     private AudioNode step1;
-     private AudioNode step2;
+    final private AudioNode step1;
+    final private AudioNode step2;
      
-    private Action walk_l;
-    private Action walk_r;
+    final private Action walk_l;
+    final private Action walk_r;
     private boolean forward = false, backward = false,
             leftRotate = false, rightRotate = false;
     
@@ -49,6 +49,7 @@ public class PlayerMoveControl implements ActionListener{
         
         step1  = new AudioNode(assetManager, "Sounds/sfx/FS01_00001.ogg",DataType.Buffer);
         step2  = new AudioNode(assetManager, "Sounds/sfx/FS01_00002.ogg",DataType.Buffer);
+        
         
        //step1.setReverbEnabled(true);
        step1.setPositional(true);
