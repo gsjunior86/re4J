@@ -12,10 +12,14 @@ import com.jme3.bullet.collision.PhysicsCollisionEvent;
 import com.jme3.bullet.collision.PhysicsCollisionListener;
 import com.jme3.bullet.collision.shapes.CollisionShape;
 import com.jme3.bullet.control.GhostControl;
+import com.jme3.material.Material;
+import com.jme3.material.RenderState;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.CameraNode;
+import com.jme3.scene.Node;
 import com.jme3.ui.Picture;
+import java.io.File;
 
 /**
  *
@@ -28,6 +32,9 @@ public class SceneChangerControl extends GhostControl implements PhysicsCollisio
     private final String SCENE_CHANGER = "nextScene";
     private final AssetManager assetManager;
     private final CameraNode camNode;
+    private final int SCREEN_WIDTH;
+    private final int SCREEN_HEIGHT;
+    private final Node guiNode;
     
     
     public SceneChangerControl(String triggerName,
@@ -41,6 +48,9 @@ public class SceneChangerControl extends GhostControl implements PhysicsCollisio
         this.camNode = camNode;
         this.backgroundPicture = backgroundPicture;
         this.assetManager = assetManager;
+        SCREEN_WIDTH = (int) this.backgroundPicture.getUserData("width");
+        SCREEN_HEIGHT = (int) this.backgroundPicture.getUserData("height");
+        guiNode = (Node) this.backgroundPicture.getUserData("gui_layer");
     }
         
     
@@ -48,8 +58,34 @@ public class SceneChangerControl extends GhostControl implements PhysicsCollisio
     public void collision(PhysicsCollisionEvent event) {
         if(event.getNodeA().getName().startsWith("player") && event.getNodeB().getName().equals(triggerName)){
             
+            String backgroundFile = event.getNodeB().getUserData(SCENE_CHANGER).toString();
+            
+            
+            String alphaName =
+                    backgroundFile.substring(0,backgroundFile.lastIndexOf("/"))
+                            .concat("/"+
+                    backgroundFile.substring(backgroundFile.lastIndexOf("/")+1,backgroundFile.lastIndexOf(".")).concat("_a.png"));            
+            
+            guiNode.detachAllChildren();
+            Picture alphaLayer = new Picture("AlphaLayer");        
+            alphaLayer.setWidth(SCREEN_WIDTH);
+            alphaLayer.setHeight(SCREEN_HEIGHT);
+            Material mat0 = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+            try{
+                mat0.setTexture("ColorMap", assetManager.loadTexture(alphaName));
+                mat0.getAdditionalRenderState().setBlendMode(RenderState.BlendMode.Alpha);
+                alphaLayer.setMaterial(mat0);
+                guiNode.attachChild(alphaLayer);
+            }catch(com.jme3.asset.AssetNotFoundException ex){
+                    System.out.println("Could not find: " + alphaName);
+                    alphaLayer = null;
+                    mat0 = null;
+            }
+            
+           
+            
             this.backgroundPicture.setImage(assetManager,
-                    event.getNodeB().getUserData(SCENE_CHANGER).toString(),
+                    backgroundFile,
                     true);
             
             String[] rotArray = event.getNodeB().getUserData("camRotation").toString().split(",");
