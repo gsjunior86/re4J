@@ -25,17 +25,27 @@ import javax.swing.UnsupportedLookAndFeelException;
  */
 public class Utils {
 
+    public static List<Spatial> getSpatialsFromNode(Node n, final String trigger, final String type) {
+        final List<Spatial> listSpatials = new ArrayList<Spatial>();
+
+        SceneGraphVisitor visitor = (Spatial spatial) -> {
+            if (spatial.getName().startsWith(trigger) && spatial.getName().substring(spatial.getName().indexOf("_")+1,
+                    spatial.getName().lastIndexOf("_")).equals(type)) {
+                listSpatials.add(spatial);
+            }
+        };
+        
+        n.depthFirstTraversal(visitor);
+
+        return listSpatials;
+    }
+    
     public static List<Spatial> getSpatialsFromNode(Node n, final String s) {
         final List<Spatial> listSpatials = new ArrayList<Spatial>();
 
-        SceneGraphVisitor visitor = new SceneGraphVisitor() {
-
-            @Override
-            public void visit(Spatial spatial) {
-                if (spatial.getName().contains(s)) {
-                    listSpatials.add(spatial);
-                }
-
+        SceneGraphVisitor visitor = (Spatial spatial) -> {
+            if (spatial.getName().startsWith(s)) {
+                listSpatials.add(spatial);
             }
         };
         

@@ -5,8 +5,9 @@
  */
 package br.gsj.re4j.main;
 
-import br.gsj.re4j.anim.PlayerMoveControl;
-import br.gsj.re4j.physics.SceneChangerControl;
+import br.gsj.re4j.anim.PlayerAnimation;
+import br.gsj.re4j.control.SceneChangerControl;
+import br.gsj.re4j.control.TextDisplayControl;
 import com.jme3.app.SimpleApplication;
 import com.jme3.bullet.BulletAppState;
 import com.jme3.bullet.collision.shapes.CollisionShape;
@@ -49,7 +50,7 @@ public class Main extends SimpleApplication{
     
     
     public static boolean FREE_CAMERA = false;
-    public static boolean DEBUG_PHYSICS = true;
+    public static boolean DEBUG_PHYSICS = false;
 
     private BulletAppState bulletAppState;
     private BetterCharacterControl playerControl;
@@ -63,7 +64,7 @@ public class Main extends SimpleApplication{
     private Picture layerPic;
     private CameraNode camNode;
     
-    private PlayerMoveControl playerMoveControl;
+    private PlayerAnimation playerAnim;
 
     private AnimComposer playerAnimComposer;
 
@@ -106,26 +107,26 @@ public class Main extends SimpleApplication{
         
         int g = 2;
         
-        if (playerMoveControl.isForward()) {
+        if (playerAnim.isForward()) {
             playerWalkDirection.addLocal(dir);
             playerWalkDirection.set(dir);
             playerControl.setViewDirection(classicMoveDir);
             playerControl.setWalkDirection(playerWalkDirection);
         }
-        else if (playerMoveControl.isBackward()) {
+        else if (playerAnim.isBackward()) {
             playerWalkDirection.addLocal(dir.negate());
             playerWalkDirection.set(dir.negate());
             playerControl.setViewDirection(classicMoveDir.negate());
             playerControl.setWalkDirection(playerWalkDirection);
         }
-        else if(playerMoveControl.isRightRotate()){
+        else if(playerAnim.isRightRotate()){
             Quaternion pitch = new Quaternion();
             pitch.fromAngleAxis(FastMath.PI * g / 180, Vector3f.UNIT_Y);
             classicMoveDir.set(pitch.mult(classicMoveDir));
             playerControl.setViewDirection(classicMoveDir);
             
         }
-        else if(playerMoveControl.isLeftRotate()){
+        else if(playerAnim.isLeftRotate()){
            Quaternion pitch = new Quaternion();
             pitch.fromAngleAxis(-1* (FastMath.PI * g / 180), Vector3f.UNIT_Y);
             classicMoveDir.set(pitch.mult(classicMoveDir));
@@ -146,20 +147,20 @@ public class Main extends SimpleApplication{
 
         playerWalkDirection.set(0, 0, 0);
         
-        if (playerMoveControl.isForward()) {
+        if (playerAnim.isForward()) {
             playerWalkDirection.addLocal(camDir);
             playerControl.setViewDirection(playerWalkDirection);
         }
-        if (playerMoveControl.isBackward()) {
+        if (playerAnim.isBackward()) {
             playerWalkDirection.addLocal(camDir.negate());
             playerControl.setViewDirection(playerWalkDirection);
         }
         
-        if(playerMoveControl.isRightRotate()){
+        if(playerAnim.isRightRotate()){
             playerWalkDirection.addLocal(camLeft.negate());
             playerControl.setViewDirection(playerWalkDirection);            
         }
-        if(playerMoveControl.isLeftRotate()){
+        if(playerAnim.isLeftRotate()){
            playerWalkDirection.addLocal(camLeft);
            playerControl.setViewDirection(playerWalkDirection);
         }
@@ -188,7 +189,7 @@ public class Main extends SimpleApplication{
     }
 
 
-    private void createCharacter() {
+    private void spawnPlayer() {
         
         //rootNode.getChild("claire").removeFromParent();
 
@@ -222,12 +223,23 @@ public class Main extends SimpleApplication{
         bulletAppState.getPhysicsSpace().add(playerControl);
         bulletAppState.getPhysicsSpace().add(player);
         playerControl.setEnabled(true);
-        playerMoveControl = new PlayerMoveControl(playerAnimComposer, inputManager,assetManager);
+        playerAnim = new PlayerAnimation(playerAnimComposer, inputManager,assetManager);
+        
+        List<Spatial> frontNode = Utils.getSpatialsFromNode((Node) player, "front");
+        for(Spatial node: frontNode){
+             //System.out.println(node.getName());
+             CollisionShape cs = CollisionShapeFactory.createBoxShape(node);
+             GhostControl gc = new GhostControl(cs);
+             node.addControl(gc);
+             node.setCullHint(Spatial.CullHint.Always);
+             //bulletAppState.getPhysicsSpace().addCollisionListener(gc);
+             bulletAppState.getPhysicsSpace().add(node.getControl(GhostControl.class));
+        } 
         
     }
     
 
-    private void createScene() {
+    private void setupScene() {
         
         Vector3f loc = new Vector3f(15.169064F, 6.051987F, 2.7805796F);
         Quaternion rot = new Quaternion(0.0077047423F, -0.82605225F, 0.011292024F, 0.5634277F);
@@ -245,13 +257,15 @@ public class Main extends SimpleApplication{
         currentScene = assetManager.loadModel("Scenes/rpd/stairwell.j3o");
 
         rootNode.attachChild(currentScene);
-        List<Spatial> listFloors = Utils.getSpatialsFromNode(rootNode, "floor_");
-        List<Spatial> listWalls = Utils.getSpatialsFromNode(rootNode, "wall_");
+        
+        spawnPlayer();
+        
+        List<Spatial> listFloors = Utils.getSpatialsFromNode(rootNode, "floor");
+        List<Spatial> listWalls = Utils.getSpatialsFromNode(rootNode, "wall");
         
         Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
         mat.getAdditionalRenderState().setWireframe(true);
-        
-        
+         
         
         for (Spatial floor : listFloors){
             CollisionShape cs = CollisionShapeFactory.createBoxShape(floor);
@@ -278,8 +292,8 @@ public class Main extends SimpleApplication{
             bulletAppState.getPhysicsSpace().add(wall.getControl(RigidBodyControl.class));
         }
         
-        List<Spatial> listTriggers = Utils.getSpatialsFromNode(rootNode, "trigger_");
-        for(Spatial trigger: listTriggers){
+        List<Spatial> listTriggerScene = Utils.getSpatialsFromNode(rootNode, "trigger","scene");
+        for(Spatial trigger: listTriggerScene){
              CollisionShape cs = CollisionShapeFactory.createBoxShape(trigger);   
              SceneChangerControl scc = new SceneChangerControl(trigger.getName(),camNode,
                      backgroundPicture,assetManager,cs);
@@ -287,7 +301,22 @@ public class Main extends SimpleApplication{
              trigger.setCullHint(Spatial.CullHint.Always);
              bulletAppState.getPhysicsSpace().addCollisionListener(scc);
              bulletAppState.getPhysicsSpace().add(trigger.getControl(GhostControl.class));
-        }        
+        }
+        
+        List<Spatial> listTriggerText = Utils.getSpatialsFromNode(rootNode, "trigger","text");
+        for(Spatial trigger: listTriggerText){
+             CollisionShape cs = CollisionShapeFactory.createBoxShape(trigger);   
+             TextDisplayControl tdc =
+                     new TextDisplayControl("Test 123",guiNode,
+                             assetManager.loadFont("Interface/Fonts/Inconsolata.fnt"),
+                             playerAnim,cs);
+             trigger.addControl(tdc);
+             trigger.setCullHint(Spatial.CullHint.Always);
+             bulletAppState.getPhysicsSpace().addCollisionListener(tdc);
+             bulletAppState.getPhysicsSpace().add(trigger.getControl(GhostControl.class));
+        }
+        
+        
                         
         
 
@@ -364,8 +393,7 @@ public class Main extends SimpleApplication{
       
         viewPort.setClearFlags(false, true, true);
 
-        createScene();
-        createCharacter();
+        setupScene();
         
         //setupLightAndShadow();
         rootNode.setShadowMode(ShadowMode.CastAndReceive);
