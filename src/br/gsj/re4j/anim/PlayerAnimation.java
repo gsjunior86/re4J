@@ -140,6 +140,9 @@ public class PlayerAnimation implements ActionListener{
                 }
             } else if (binding.equals("Action")) {
                 if (value) {
+                    playerAnimComposer.setCurrentAction("breath");
+                    step1.stop();
+                    step2.stop();
                     action = true;
                 } else {
                     action = false;
