@@ -86,6 +86,7 @@ public class Main extends SimpleApplication{
         
         AppSettings settings = new AppSettings(true);
         settings.setFullscreen(false);
+        settings.setGammaCorrection(true);
         settings.put("Width", 1280);
         settings.put("Height", 720);
         settings.put("VSync", true);
@@ -187,6 +188,7 @@ public class Main extends SimpleApplication{
             System.out.println("Rotation: " + cam.getRotation());
         }
     }
+    
 
 
     private void spawnPlayer() {

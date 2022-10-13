@@ -29,7 +29,7 @@ public class TextDisplayControl extends RigidBodyControl implements PhysicsColli
     public TextDisplayControl(String text, Node guiNode,
             BitmapFont guiFont, PlayerAnimation playerAL,
             CollisionShape cs){
-        super(cs);
+        super(cs,0);
         this.guiNode = guiNode;
         this.playerAL = playerAL;
         BitmapText hudText = new BitmapText(guiFont, false);
@@ -44,7 +44,6 @@ public class TextDisplayControl extends RigidBodyControl implements PhysicsColli
     public void collision(PhysicsCollisionEvent event) {
         //System.out.println(event.getNodeA().getName() + " | " + event.getNodeB().getName());
         if(event.getNodeA().getName().startsWith("front") && playerAL.isAction()){
-            System.out.println(playerAL.isForward());
             guiNode.attachChild(hudText);
         }else{
             guiNode.detachChild(hudText);

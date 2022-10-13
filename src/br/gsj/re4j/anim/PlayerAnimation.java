@@ -105,16 +105,12 @@ public class PlayerAnimation implements ActionListener{
     @Override
     public void onAction(String binding, boolean value, float tpf) {
         if(!Main.FREE_CAMERA){
-            if(!value){  
-                playerAnimComposer.setCurrentAction("breath");
-                step1.stop();
-                step2.stop();
-            }
             if (binding.equals("Rotate Left")) {
                 if (value) {
                     playerAnimComposer.setCurrentAction("walkCycle");
                     leftRotate = true;
                 } else {
+                     playerAnimComposer.setCurrentAction("breath");
                     leftRotate = false;
                 }
             } else if (binding.equals("Rotate Right")) {
@@ -122,6 +118,7 @@ public class PlayerAnimation implements ActionListener{
                     playerAnimComposer.setCurrentAction("walkCycle");
                     rightRotate = true;
                 } else {
+                    playerAnimComposer.setCurrentAction("breath");
                     rightRotate = false;
                 }
             } else if (binding.equals("Walk Forward")) {
@@ -129,6 +126,7 @@ public class PlayerAnimation implements ActionListener{
                     playerAnimComposer.setCurrentAction("walkCycle");
                     forward = true;
                 } else {
+                     playerAnimComposer.setCurrentAction("breath");
                     forward = false;
                 }
             } else if (binding.equals("Walk Backward")) {
@@ -136,13 +134,11 @@ public class PlayerAnimation implements ActionListener{
                     playerAnimComposer.setCurrentAction("walkCycle");
                     backward = true;
                 } else {
+                     playerAnimComposer.setCurrentAction("breath");
                     backward = false;
                 }
-            } else if (binding.equals("Action")) {
+            }else if (binding.equals("Action")) {
                 if (value) {
-                    playerAnimComposer.setCurrentAction("breath");
-                    step1.stop();
-                    step2.stop();
                     action = true;
                 } else {
                     action = false;
