@@ -6,6 +6,7 @@
 package br.gsj.re4j.anim;
 
 import br.gsj.re4j.main.Main;
+import br.gsj.re4j.main.MainGameState;
 import com.jme3.anim.AnimComposer;
 import com.jme3.anim.tween.Tween;
 import com.jme3.anim.tween.Tweens;
@@ -17,6 +18,7 @@ import com.jme3.input.InputManager;
 import com.jme3.input.KeyInput;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.KeyTrigger;
+import com.jme3.input.controls.Trigger;
 
 
 /**
@@ -36,16 +38,20 @@ public class PlayerAnimation implements ActionListener{
      
     private final Action walk_l;
     private final Action walk_r;
+    
     private boolean forward = false, backward = false,
             leftRotate = false, rightRotate = false,action = false;
     
+    private final MainGameState gameState;
+    
     
     public PlayerAnimation(AnimComposer playerAnimComposer, InputManager inputManager,
-            AssetManager assetManager){
+            AssetManager assetManager, MainGameState gameState){
         
         this.playerAnimComposer = playerAnimComposer;
         this.inputManager = inputManager;
         this.assetManager = assetManager;
+        this.gameState = gameState;
         
         step1  = new AudioNode(assetManager, "Sounds/sfx/FS01_00001.ogg",DataType.Buffer);
         step2  = new AudioNode(assetManager, "Sounds/sfx/FS01_00002.ogg",DataType.Buffer);
@@ -93,6 +99,10 @@ public class PlayerAnimation implements ActionListener{
                 new KeyTrigger(KeyInput.KEY_DOWN));
         inputManager.addMapping("Action",
                 new KeyTrigger(KeyInput.KEY_X));
+        
+        inputManager.addMapping("Pause", new Trigger[]{
+                new KeyTrigger(KeyInput.KEY_P),new KeyTrigger(KeyInput.KEY_PAUSE)});
+        
 
 
         inputManager.addListener(this, "Rotate Left");
@@ -100,10 +110,16 @@ public class PlayerAnimation implements ActionListener{
         inputManager.addListener(this, "Walk Forward");
         inputManager.addListener(this, "Walk Backward");
         inputManager.addListener(this, "Action");
+        inputManager.addListener(this, "Pause");
     }
 
     @Override
     public void onAction(String binding, boolean value, float tpf) {
+        
+        if(value)
+            gameState.setEnabled(true);
+            
+        
         if(!Main.FREE_CAMERA){
             if (binding.equals("Rotate Left")) {
                 if (value) {
@@ -144,7 +160,8 @@ public class PlayerAnimation implements ActionListener{
                     action = false;
                 }
             }
-
+            
+            
         }
     }
 

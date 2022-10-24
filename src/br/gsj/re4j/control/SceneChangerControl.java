@@ -19,7 +19,6 @@ import com.jme3.math.Vector3f;
 import com.jme3.scene.CameraNode;
 import com.jme3.scene.Node;
 import com.jme3.ui.Picture;
-import java.io.File;
 
 /**
  *
@@ -35,6 +34,7 @@ public class SceneChangerControl extends GhostControl implements PhysicsCollisio
     private final int SCREEN_WIDTH;
     private final int SCREEN_HEIGHT;
     private final Node guiNode;
+    private final Node roomNode;
     
     
     public SceneChangerControl(String triggerName,
@@ -51,6 +51,7 @@ public class SceneChangerControl extends GhostControl implements PhysicsCollisio
         SCREEN_WIDTH = (int) this.backgroundPicture.getUserData("width");
         SCREEN_HEIGHT = (int) this.backgroundPicture.getUserData("height");
         guiNode = (Node) this.backgroundPicture.getUserData("gui_layer");
+        roomNode = (Node) this.backgroundPicture.getUserData("room_layer");
     }
         
     
@@ -104,7 +105,8 @@ public class SceneChangerControl extends GhostControl implements PhysicsCollisio
             
             camNode.setLocalRotation(rot);
             camNode.setLocalTranslation(loc);
-                    
+            roomNode.updateGeometricState();
+            guiNode.updateGeometricState();
         }
             
         
