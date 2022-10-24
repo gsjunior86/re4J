@@ -3,6 +3,8 @@ build/classes
 build/empty
 build/generated-sources/
 build/assets.jar
+build/
+nbproject/
 blender/
 *.log
 *.so
