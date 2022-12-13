@@ -18,10 +18,10 @@ public class Main extends SimpleApplication  implements ActionListener{
     
     
     public static boolean FREE_CAMERA = false;
-    public static boolean DEBUG_PHYSICS = false;
+    public static boolean DEBUG_PHYSICS = true;
 
     private BulletAppState bulletAppState;
-    private MainGameState currentGameState;
+    private SceneGameState currentGameState;
 
 
     public static void main(String[] args) {
@@ -41,7 +41,7 @@ public class Main extends SimpleApplication  implements ActionListener{
         
 
         app.setSettings(settings);
-        app.setDisplayStatView(false);
+        app.setDisplayStatView(true);
         
         app.start(); // start the game// start the game
 
@@ -80,8 +80,8 @@ public class Main extends SimpleApplication  implements ActionListener{
     public void initialize() {
         
         super.initialize();
-        currentGameState = new MainGameState(settings.getHeight(),settings.getWidth(),
-                flyCam,guiNode);
+        currentGameState = new SceneGameState(settings.getHeight(),settings.getWidth(),
+                flyCam,guiNode,"Scenes/definitions/rpd/stairwell.xml","player_spawn_2");
         currentGameState.setEnabled(true);
         bulletAppState = new BulletAppState();
         bulletAppState.setDebugEnabled(DEBUG_PHYSICS);

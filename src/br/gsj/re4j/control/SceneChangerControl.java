@@ -93,15 +93,16 @@ public class SceneChangerControl extends GhostControl implements PhysicsCollisio
             String[] locArray = event.getNodeB().getUserData("camLocation").toString().split(",");
             
             Vector3f loc = new Vector3f(
-                    Float.valueOf(locArray[0]),
-                    Float.valueOf(locArray[1]),
-                    Float.valueOf(locArray[2]));
+                    Float.parseFloat(locArray[0]),
+                    Float.parseFloat(locArray[1]),
+                    Float.parseFloat(locArray[2]));
             
-            Quaternion rot = new Quaternion(
-                    Float.valueOf(rotArray[0]),
-                    Float.valueOf(rotArray[1]),
-                    Float.valueOf(rotArray[2]),
-                    Float.valueOf(rotArray[3]));
+            Quaternion rot;
+            rot = new Quaternion(
+                    Float.parseFloat(rotArray[0]),
+                    Float.parseFloat(rotArray[1]),
+                    Float.parseFloat(rotArray[2]),
+                    Float.parseFloat(rotArray[3]));
             
             camNode.setLocalRotation(rot);
             camNode.setLocalTranslation(loc);

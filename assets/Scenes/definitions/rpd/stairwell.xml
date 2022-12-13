@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+Click nbfs://nbhost/SystemFileSystem/Templates/XML/XMLDocument.xml to edit this template
+-->
+
+
+
+<map map="Scenes/maps/rpd/stairwell.j3o">
+
+    <scenes>
+    
+    	<scene name="scene_1">
+    	    <camLocation>15.169064, 6.051987, 2.7805796</camLocation>
+            <camRotation>0.0077047423, -0.82605225, 0.011292024F, 0.5634277</camRotation>
+            <nextScene>Textures/rooms/rpd/stairwell/stairwell_1.png</nextScene>
+    	</scene>
+    	
+    	<scene name="scene_2">
+    	    <camLocation>45.978283, 7.787435, 4.6403794</camLocation>
+            <camRotation>0.012824874, -0.8021301, 0.01723506, 0.5967627</camRotation>
+            <nextScene>Textures/rooms/rpd/stairwell/stairwell_2.png</nextScene>
+    	</scene>
+    	
+    	<scene name ="scene_3">
+    	    <camLocation>48.17761, 23.341522, 27.522324</camLocation>
+            <camRotation>-0.05873629, 0.9404999, -0.25537348, -0.21632014</camRotation>
+            <nextScene>Textures/rooms/rpd/stairwell/stairwell_3.png</nextScene>
+    	</scene>
+           
+    </scenes>
+    
+    <!--2132-->
+    
+    <triggers>
+        <trigger name="trigger_scene_1" type = "scene" scene = "scene_2" />
+        <trigger name="trigger_scene_2" type = "scene" scene = "scene_1" />
+        <trigger name="trigger_scene_3" type = "scene" scene = "scene_3" />
+        <trigger name="trigger_scene_4" type = "scene" scene = "scene_2" />
+
+
+        <trigger name="trigger_text_1" type = "text">
+            <text>This area is not ready yet...</text>
+        </trigger>
+               
+        <trigger name="trigger_door_1" type = "door"
+                 destination="Scenes/definitions/rpd/corridor.xml"
+                 spawn="player_spawn_1"/>
+    </triggers>
+    
+    <spawns>
+    	<spawn name="player_spawn_1" scene="scene_1" direction="0"/>
+        <spawn name="player_spawn_2" scene="scene_2" direction="0"/>
+    </spawns>
+
+</map>

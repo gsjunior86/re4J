@@ -6,7 +6,7 @@
 package br.gsj.re4j.anim;
 
 import br.gsj.re4j.main.Main;
-import br.gsj.re4j.main.MainGameState;
+import br.gsj.re4j.main.SceneGameState;
 import com.jme3.anim.AnimComposer;
 import com.jme3.anim.tween.Tween;
 import com.jme3.anim.tween.Tweens;
@@ -42,11 +42,11 @@ public class PlayerAnimation implements ActionListener{
     private boolean forward = false, backward = false,
             leftRotate = false, rightRotate = false,action = false;
     
-    private final MainGameState gameState;
+    private final SceneGameState gameState;
     
     
     public PlayerAnimation(AnimComposer playerAnimComposer, InputManager inputManager,
-            AssetManager assetManager, MainGameState gameState){
+            AssetManager assetManager, SceneGameState gameState){
         
         this.playerAnimComposer = playerAnimComposer;
         this.inputManager = inputManager;
@@ -116,8 +116,10 @@ public class PlayerAnimation implements ActionListener{
     @Override
     public void onAction(String binding, boolean value, float tpf) {
         
-        if(value)
+        if(value){
             gameState.setEnabled(true);
+            gameState.getGuiNode().detachAllChildren();
+        }
             
         
         if(!Main.FREE_CAMERA){

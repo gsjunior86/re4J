@@ -5,10 +5,11 @@
 package br.gsj.re4j.control;
 
 import br.gsj.re4j.anim.PlayerAnimation;
-import br.gsj.re4j.main.MainGameState;
+import br.gsj.re4j.main.SceneGameState;
 import com.jme3.bullet.collision.PhysicsCollisionEvent;
 import com.jme3.bullet.collision.PhysicsCollisionListener;
 import com.jme3.bullet.collision.shapes.CollisionShape;
+import com.jme3.bullet.control.GhostControl;
 import com.jme3.bullet.control.RigidBodyControl;
 import com.jme3.font.BitmapFont;
 import com.jme3.font.BitmapText;
@@ -20,19 +21,21 @@ import com.jme3.scene.Node;
  *
  * @author gsjunior
  */
-public class TextDisplayControl extends RigidBodyControl implements PhysicsCollisionListener {
+public class TextDisplayControl extends GhostControl implements PhysicsCollisionListener {
     
+    private final String triggerName;
     private final Node guiNode;
     private final Node roomNode;
     private final BitmapText hudText;
     private final PlayerAnimation playerAL;
-    private final MainGameState gameState;
+    private final SceneGameState gameState;
     
     
-    public TextDisplayControl(String text, Node guiNode,Node roomNode,
+    public TextDisplayControl(String triggerName,String text, Node guiNode,Node roomNode,
             BitmapFont guiFont, PlayerAnimation playerAL,
-            CollisionShape cs, MainGameState gameState){
-        super(cs,0);
+            CollisionShape cs, SceneGameState gameState){
+        super(cs);
+        this.triggerName = triggerName;
         this.guiNode = guiNode;
         this.roomNode = roomNode;
         this.playerAL = playerAL;
@@ -48,15 +51,16 @@ public class TextDisplayControl extends RigidBodyControl implements PhysicsColli
     @Override
     public void collision(PhysicsCollisionEvent event) {
         //System.out.println(event.getNodeA().getName() + " | " + event.getNodeB().getName());
-        if(event.getNodeA().getName().startsWith("front") && playerAL.isAction()){
+        if(event.getNodeA().getName().startsWith("front") && playerAL.isAction()
+                && event.getNodeB().getName().equals(this.triggerName)){
+            System.out.println(event.getNodeB().getName() + " | " + this );
+            System.out.println(hudText.getText());
             guiNode.attachChild(hudText);
             gameState.setEnabled(false);
-        }else{
-            guiNode.detachChild(hudText);
         }
         
-        if(!gameState.isEnabled())
-            guiNode.attachChild(hudText);
+        /*if(!gameState.isEnabled())
+            guiNode.attachChild(hudText);*/
             
         
         roomNode.updateGeometricState();

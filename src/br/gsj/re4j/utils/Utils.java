@@ -8,17 +8,14 @@ package br.gsj.re4j.utils;
 import com.jme3.scene.Node;
 import com.jme3.scene.SceneGraphVisitor;
 import com.jme3.scene.Spatial;
-import java.awt.EventQueue;
 import java.util.ArrayList;
+
 import java.util.List;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
-
 /**
  *
  * @author gsjunior
@@ -53,7 +50,6 @@ public class Utils {
 
         return listSpatials;
     }
-    
     
     
     public static String charSelection() {
