@@ -6,11 +6,11 @@ package br.gsj.re4j.control;
 
 import br.gsj.re4j.anim.PlayerAnimation;
 import br.gsj.re4j.main.SceneGameState;
+import br.gsj.re4j.utils.Utils;
 import com.jme3.bullet.collision.PhysicsCollisionEvent;
 import com.jme3.bullet.collision.PhysicsCollisionListener;
 import com.jme3.bullet.collision.shapes.CollisionShape;
 import com.jme3.bullet.control.GhostControl;
-import com.jme3.bullet.control.RigidBodyControl;
 import com.jme3.font.BitmapFont;
 import com.jme3.font.BitmapText;
 import com.jme3.math.ColorRGBA;
@@ -29,6 +29,8 @@ public class TextDisplayControl extends GhostControl implements PhysicsCollision
     private final BitmapText hudText;
     private final PlayerAnimation playerAL;
     private final SceneGameState gameState;
+    private float lastFrameTime;
+    private boolean isShow = false;
     
     
     public TextDisplayControl(String triggerName,String text, Node guiNode,Node roomNode,
@@ -40,7 +42,8 @@ public class TextDisplayControl extends GhostControl implements PhysicsCollision
         this.roomNode = roomNode;
         this.playerAL = playerAL;
         this.gameState = gameState;
-        BitmapText hudText = new BitmapText(guiFont, false);
+        BitmapText hudText = new BitmapText(guiFont);
+        hudText.setName("TextOverlay");
         hudText.setSize(guiFont.getCharSet().getRenderedSize());      // font size
         hudText.setColor(ColorRGBA.White);                             // font color
         hudText.setText(text);             // the text
@@ -49,13 +52,22 @@ public class TextDisplayControl extends GhostControl implements PhysicsCollision
     }
 
     @Override
+    public void update(float tpf) {
+        super.update(tpf);
+        if(this.isShow)
+            System.out.println("Trigger: " + triggerName + " | " + tpf);
+    }
+    
+    
+
+    @Override
     public void collision(PhysicsCollisionEvent event) {
         //System.out.println(event.getNodeA().getName() + " | " + event.getNodeB().getName());
         if(event.getNodeA().getName().startsWith("front") && playerAL.isAction()
                 && event.getNodeB().getName().equals(this.triggerName)){
-            System.out.println(event.getNodeB().getName() + " | " + this );
-            System.out.println(hudText.getText());
-            guiNode.attachChild(hudText);
+            if(Utils.getMatchSpatialsFromNode(guiNode, "TextOverlay").isEmpty())
+                guiNode.attachChild(hudText);
+            isShow = true;                
             gameState.setEnabled(false);
         }
         

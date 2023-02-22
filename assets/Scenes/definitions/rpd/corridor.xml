@@ -15,11 +15,19 @@ Click nbfs://nbhost/SystemFileSystem/Templates/XML/XMLDocument.xml to edit this 
             <camRotation>0.06296599, -0.61229426, 0.04901189, 0.78659314</camRotation>
             <nextScene>Textures/rooms/rpd/corridor/corridor_1.png</nextScene>
     	</scene>
+        
+        <scene name="scene_2">
+    	    <camLocation>-8.998267, 8.565262, -4.821983</camLocation>
+            <camRotation>0.05515822, 0.615186, -0.043210786, 0.78526217</camRotation>
+            <nextScene>Textures/rooms/rpd/corridor/corridor_2.png</nextScene>
+    	</scene>
            
     </scenes>
     
     <triggers>
-        <trigger name="trigger_scene_1" type = "scene" scene = "scene_1" />
+        <trigger name="trigger_scene_1" type = "scene" scene = "scene_2" />
+        
+        <trigger name="trigger_scene_2" type = "scene" scene = "scene_1" />
         
                 
         <trigger name="trigger_door_1" type = "door"
@@ -30,7 +38,7 @@ Click nbfs://nbhost/SystemFileSystem/Templates/XML/XMLDocument.xml to edit this 
     </triggers>
     
     <spawns>
-    	<spawn name="player_spawn_1" scene="scene_1" direction="-90"/>
+    	<spawn name="player_spawn_1" scene="scene_1" direction="270"/>
     </spawns>
 
     

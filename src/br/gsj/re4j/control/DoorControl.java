@@ -10,9 +10,6 @@ import com.jme3.bullet.collision.PhysicsCollisionEvent;
 import com.jme3.bullet.collision.PhysicsCollisionListener;
 import com.jme3.bullet.collision.shapes.CollisionShape;
 import com.jme3.bullet.control.GhostControl;
-import com.jme3.font.BitmapFont;
-import com.jme3.font.BitmapText;
-import com.jme3.math.ColorRGBA;
 import com.jme3.scene.Node;
 
 
@@ -48,9 +45,13 @@ public class DoorControl extends GhostControl implements PhysicsCollisionListene
     @Override
     public void collision(PhysicsCollisionEvent event) {
         //System.out.println(event.getNodeA().getName() + " | " + event.getNodeB().getName());
+        
         if(event.getNodeA().getName().startsWith("front") && playerAL.isAction()
                 && event.getNodeB().getName().equals(this.triggerName)){
             
+            
+           /* System.out.println(playerAL.isAction());
+            System.out.println(destination + " | " + spawnPoint + " | " + this);*/
             this.gameState.changeMap(destination, spawnPoint);
             
         }

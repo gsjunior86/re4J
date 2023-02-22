@@ -40,7 +40,7 @@ public class Utils {
     public static List<Spatial> getSpatialsFromNode(Node n, final String s) {
         final List<Spatial> listSpatials = new ArrayList<Spatial>();
 
-        SceneGraphVisitor visitor = (Spatial spatial) -> {
+        SceneGraphVisitor visitor = (Spatial spatial) -> {       
             if (spatial.getName().startsWith(s)) {
                 listSpatials.add(spatial);
             }
@@ -49,6 +49,25 @@ public class Utils {
         n.depthFirstTraversal(visitor);
 
         return listSpatials;
+    }
+    
+    public static List<Spatial> getMatchSpatialsFromNode(Node n, final String s) {
+        final List<Spatial> listSpatials = new ArrayList<Spatial>();
+
+        SceneGraphVisitor visitor = (Spatial spatial) -> {
+            if (spatial.getName() != null && spatial.getName().equals(s)) {
+                listSpatials.add(spatial);
+            }
+        };
+        
+        n.depthFirstTraversal(visitor);
+
+        return listSpatials;
+    }
+    
+    public static Spatial getSpatialFromNode(Node n, final String s){
+        
+        return n.getChild(s);
     }
     
     

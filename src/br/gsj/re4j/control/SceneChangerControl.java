@@ -7,6 +7,7 @@ package br.gsj.re4j.control;
 
 
 
+import br.gsj.re4j.utils.Utils;
 import com.jme3.asset.AssetManager;
 import com.jme3.bullet.collision.PhysicsCollisionEvent;
 import com.jme3.bullet.collision.PhysicsCollisionListener;
@@ -67,7 +68,7 @@ public class SceneChangerControl extends GhostControl implements PhysicsCollisio
                             .concat("/"+
                     backgroundFile.substring(backgroundFile.lastIndexOf("/")+1,backgroundFile.lastIndexOf(".")).concat("_a.png"));            
             
-            guiNode.detachAllChildren();
+            //guiNode.detachAllChildren();
             Picture alphaLayer = new Picture("AlphaLayer");        
             alphaLayer.setWidth(SCREEN_WIDTH);
             alphaLayer.setHeight(SCREEN_HEIGHT);
@@ -76,9 +77,12 @@ public class SceneChangerControl extends GhostControl implements PhysicsCollisio
                 mat0.setTexture("ColorMap", assetManager.loadTexture(alphaName));
                 mat0.getAdditionalRenderState().setBlendMode(RenderState.BlendMode.Alpha);
                 alphaLayer.setMaterial(mat0);
-                guiNode.attachChild(alphaLayer);
+                if(Utils.getMatchSpatialsFromNode(guiNode, "AlphaLayer").isEmpty())
+                    guiNode.attachChild(alphaLayer);
+                
             }catch(com.jme3.asset.AssetNotFoundException ex){
-                    System.out.println("Could not find: " + alphaName);
+                    //System.out.println("Could not find: " + alphaName);
+                    guiNode.detachChildNamed("AlphaLayer");
                     alphaLayer = null;
                     mat0 = null;
             }

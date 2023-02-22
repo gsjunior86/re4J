@@ -18,7 +18,7 @@ public class Main extends SimpleApplication  implements ActionListener{
     
     
     public static boolean FREE_CAMERA = false;
-    public static boolean DEBUG_PHYSICS = true;
+    public static boolean DEBUG_PHYSICS = false;
 
     private BulletAppState bulletAppState;
     private SceneGameState currentGameState;
@@ -81,7 +81,7 @@ public class Main extends SimpleApplication  implements ActionListener{
         
         super.initialize();
         currentGameState = new SceneGameState(settings.getHeight(),settings.getWidth(),
-                flyCam,guiNode,"Scenes/definitions/rpd/stairwell.xml","player_spawn_2");
+                flyCam,guiNode,"Scenes/definitions/rpd/corridor.xml","player_spawn_1");
         currentGameState.setEnabled(true);
         bulletAppState = new BulletAppState();
         bulletAppState.setDebugEnabled(DEBUG_PHYSICS);

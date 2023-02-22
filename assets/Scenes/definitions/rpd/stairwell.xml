@@ -42,6 +42,10 @@ Click nbfs://nbhost/SystemFileSystem/Templates/XML/XMLDocument.xml to edit this 
         <trigger name="trigger_text_1" type = "text">
             <text>This area is not ready yet...</text>
         </trigger>
+        
+        <trigger name="trigger_text_window_1" type = "text">
+            <text>It is too dark to see something outside.</text>
+        </trigger>
                
         <trigger name="trigger_door_1" type = "door"
                  destination="Scenes/definitions/rpd/corridor.xml"

@@ -14,7 +14,7 @@ import br.gsj.re4j.map.SpawnPoint;
 import br.gsj.re4j.triggers.TriggerDoor;
 import br.gsj.re4j.triggers.TriggerScene;
 import br.gsj.re4j.triggers.TriggerText;
-import br.gsj.re4j.triggers.TriggerTypes;
+import br.gsj.re4j.enums.TriggerTypes;
 import br.gsj.re4j.utils.Utils;
 import com.jme3.anim.AnimComposer;
 import com.jme3.app.Application;
@@ -72,7 +72,7 @@ public class SceneGameState extends AbstractAppState{
 
     protected BulletAppState bulletAppState;
     private BetterCharacterControl playerControl;
-    final private Node roomNode = new Node("Room Node");
+    private Node roomNode = new Node("Room Node");
     private final Node guiNode;
     private Spatial currentScene;
     private Spatial player;
@@ -82,14 +82,17 @@ public class SceneGameState extends AbstractAppState{
     private AnimComposer playerAnimComposer;
     private AudioNode backgroundMusic;
     private final float walkingSpeed = 4.5f;
-    final private Vector3f playerWalkDirection = new Vector3f(0,0,0);
-    private final Vector3f classicMoveDir = new Vector3f(0,0,1);
+    private Vector3f playerWalkDirection = new Vector3f(0,0,0);
+    private Vector3f classicMoveDir = new Vector3f(0,0,1);
     private AssetManager assetManager ;
     private Application application;
     private InputManager inputManager;
     
     private Camera cam ;
     public final FlyByCamera flyCam;
+    
+    private ViewPort pv;
+    private  FilterPostProcessor fpp;
     
     private final int screenWidth;
     private final int screenHeight;
@@ -114,6 +117,7 @@ public class SceneGameState extends AbstractAppState{
     }
     
     public void changeMap(String destination, String nextSpawnPoint){
+        System.out.println("change map: " + destination + " | " + nextSpawnPoint);
         this.restart();
         this.spawnPoint = nextSpawnPoint;
         readMapDefinition(destination);
@@ -129,13 +133,33 @@ public class SceneGameState extends AbstractAppState{
         mapScenes.clear();
         mapTriggerText.clear();
         mapTriggerDoor.clear();
+        mapSpawnPoint.clear();
+        bulletAppState.getPhysicsSpace().removeAll(roomNode);
+        bulletAppState.getPhysicsSpace().remove(playerControl);
+        bulletAppState.getPhysicsSpace().remove(player);
+        bulletAppState.getPhysicsSpace().destroy();
+        bulletAppState.getPhysicsSpace().create();
+        playerAnim.clearMappings();
         currentScene = null;
         player = null;
-        backgroundMusic.stop();
-        backgroundMusic = null;
-        bulletAppState.getPhysicsSpace().removeAll(roomNode);
+        playerControl = null;
+        playerAnim = null;
+        playerAnimComposer = null;
+        //backgroundMusic.stop();
+        //backgroundMusic = null;
+        pv.detachScene(roomNode);
+        pv.detachScene(backgroundPicture);
+        pv.removeProcessor(fpp);
+        
         roomNode.detachAllChildren();
         guiNode.detachAllChildren();
+        
+        
+        playerWalkDirection = new Vector3f(0,0,0);
+        classicMoveDir = new Vector3f(0,0,1);
+        //inputManager.clearMappings();
+        //inputManager = application.getInputManager();
+        
 
         
     }
@@ -248,9 +272,7 @@ public class SceneGameState extends AbstractAppState{
             }
         
         }
-        
-        System.out.println();
-            
+                    
         
             
         } catch (ParserConfigurationException | SAXException | IOException e) {
@@ -262,15 +284,12 @@ public class SceneGameState extends AbstractAppState{
     
     private void initializeState(){
         Scene spawnScene = mapSpawnScene.get(spawnPoint);
-        System.out.println(mapSpawnScene);
-        System.out.println(spawnScene);
         backgroundPicture = setupBackground(spawnScene.getNextScene());                        
-        ViewPort pv = application.getRenderManager().createPreView("background", cam);
         pv.setClearFlags(true, true, true);
         pv.attachScene(backgroundPicture);
         pv.attachScene(roomNode);
         
-        FilterPostProcessor fpp = new FilterPostProcessor(assetManager);
+        fpp = new FilterPostProcessor(assetManager);
         BloomFilter bloom = new BloomFilter();
         bloom.setEnabled(true);
         bloom.setBlurScale(3);
@@ -334,6 +353,7 @@ public class SceneGameState extends AbstractAppState{
         this.application = app;
         this.cam = application.getCamera();
         this.bulletAppState = this.application.getStateManager().getState(BulletAppState.class);
+        pv = application.getRenderManager().createPreView("background", cam);
         initializeState();
     }
     
@@ -407,6 +427,7 @@ public class SceneGameState extends AbstractAppState{
                 
         player.setShadowMode(RenderQueue.ShadowMode.CastAndReceive);
         
+        
         playerAnimComposer = player.getControl(AnimComposer.class);
         playerAnimComposer.setCurrentAction("breath");
         
@@ -426,7 +447,9 @@ public class SceneGameState extends AbstractAppState{
         bulletAppState.getPhysicsSpace().add(playerControl);
         bulletAppState.getPhysicsSpace().add(player);
         playerControl.setEnabled(true);
+        
         playerAnim = new PlayerAnimation(playerAnimComposer, inputManager,assetManager,this);
+        
         
         List<Spatial> frontNode = Utils.getSpatialsFromNode((Node) player, "front");
         for(Spatial node: frontNode){
@@ -508,10 +531,10 @@ public class SceneGameState extends AbstractAppState{
             bulletAppState.getPhysicsSpace().add(wall.getControl(RigidBodyControl.class));
         }
         
-        List<Spatial> listTriggerScene = Utils.getSpatialsFromNode(roomNode, "trigger","scene");
-        for(Spatial trigger: listTriggerScene){
-            if(mapTriggerScene.containsKey(trigger.getName())){
-                TriggerScene triggerScene = mapTriggerScene.get(trigger.getName());
+        for(Entry<String,TriggerScene> entry: mapTriggerScene.entrySet()){
+            Spatial trigger = Utils.getSpatialFromNode(roomNode,entry.getKey());
+            
+            TriggerScene triggerScene = mapTriggerScene.get(trigger.getName());
                 trigger.setUserData("camLocation", triggerScene.getScene().getCamLocation());
                 trigger.setUserData("camRotation", triggerScene.getScene().getCamRotation());
                 trigger.setUserData("nextScene", triggerScene.getScene().getNextScene());
@@ -523,13 +546,12 @@ public class SceneGameState extends AbstractAppState{
                 trigger.setCullHint(Spatial.CullHint.Always);
                 bulletAppState.getPhysicsSpace().addCollisionListener(scc);
                 bulletAppState.getPhysicsSpace().add(trigger.getControl(GhostControl.class));
-            }
+            
         }
-        
-        List<Spatial> listTriggerText = Utils.getSpatialsFromNode(roomNode, "trigger","text");
-        for(Spatial trigger: listTriggerText){
-            if(mapTriggerText.containsKey(trigger.getName())){
-                CollisionShape cs = CollisionShapeFactory.createBoxShape(trigger);   
+               
+        for(Entry<String,TriggerText> entry: mapTriggerText.entrySet()){
+            Spatial trigger = Utils.getSpatialFromNode(roomNode,entry.getKey());
+            CollisionShape cs = CollisionShapeFactory.createBoxShape(trigger);   
                 TextDisplayControl tdc =
                         new TextDisplayControl(trigger.getName(),
                                 mapTriggerText.get(trigger.getName()).getText(),guiNode,roomNode,
@@ -538,15 +560,12 @@ public class SceneGameState extends AbstractAppState{
                 trigger.addControl(tdc);
                 trigger.setCullHint(Spatial.CullHint.Always);
                 bulletAppState.getPhysicsSpace().addCollisionListener(tdc);
-                bulletAppState.getPhysicsSpace().add(trigger.getControl(GhostControl.class));                
-            }
+                bulletAppState.getPhysicsSpace().add(trigger.getControl(GhostControl.class));  
         }
-        
-        
-        List<Spatial> listTriggerDoor = Utils.getSpatialsFromNode(roomNode, "trigger","door");
-        for(Spatial trigger: listTriggerDoor){
-            if(mapTriggerDoor.containsKey(trigger.getName())){
-                CollisionShape cs = CollisionShapeFactory.createBoxShape(trigger);   
+                
+        for(Entry<String,TriggerDoor> entry: mapTriggerDoor.entrySet()){
+            Spatial trigger = Utils.getSpatialFromNode(roomNode,entry.getKey());
+            CollisionShape cs = CollisionShapeFactory.createBoxShape(trigger);   
                 DoorControl dc =
                         new DoorControl(trigger.getName(),
                                 mapTriggerDoor.get(trigger.getName()).getDestination(),
@@ -554,13 +573,10 @@ public class SceneGameState extends AbstractAppState{
                                 roomNode,playerAnim,cs,this);
                 trigger.addControl(dc);
                 trigger.setCullHint(Spatial.CullHint.Always);
+                System.out.println(mapTriggerDoor.get(trigger.getName()).getDestination());
                 bulletAppState.getPhysicsSpace().addCollisionListener(dc);
-                bulletAppState.getPhysicsSpace().add(trigger.getControl(GhostControl.class));                
-            }
-        }        
-        
-                        
-        
+                bulletAppState.getPhysicsSpace().add(trigger.getControl(GhostControl.class));   
+        }
 
     }
     

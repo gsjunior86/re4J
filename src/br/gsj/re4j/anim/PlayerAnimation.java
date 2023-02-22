@@ -5,8 +5,10 @@
  */
 package br.gsj.re4j.anim;
 
+import br.gsj.re4j.enums.InputMapping;
 import br.gsj.re4j.main.Main;
 import br.gsj.re4j.main.SceneGameState;
+import br.gsj.re4j.utils.Utils;
 import com.jme3.anim.AnimComposer;
 import com.jme3.anim.tween.Tween;
 import com.jme3.anim.tween.Tweens;
@@ -19,6 +21,8 @@ import com.jme3.input.KeyInput;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.KeyTrigger;
 import com.jme3.input.controls.Trigger;
+import com.jme3.scene.SceneGraphVisitor;
+import com.jme3.scene.Spatial;
 
 
 /**
@@ -70,7 +74,8 @@ public class PlayerAnimation implements ActionListener{
         walk_l = playerAnimComposer.action("walk_l");
         walk_r = playerAnimComposer.action("walk_r");
         Tween fullCycleTween = Tweens.sequence(Tweens.callMethod(this,"playStep2"),walk_l,Tweens.callMethod(this,"playStep1"), walk_r, Tweens.callMethod(this,"playStep2"));
-        Action walkCycle = playerAnimComposer.actionSequence("walkCycle", fullCycleTween); 
+        Action walkCycle = playerAnimComposer.actionSequence("walkCycle", fullCycleTween);
+        
         initKeys();
     }
     
@@ -85,45 +90,69 @@ public class PlayerAnimation implements ActionListener{
     }    
     
     private void initKeys() {
-        inputManager.addMapping("Rotate Left",
+        
+        inputManager.addMapping(InputMapping.ROTATE_LEFT.getKeyPressed(),
                 new KeyTrigger(KeyInput.KEY_A),
                 new KeyTrigger(KeyInput.KEY_LEFT));
-        inputManager.addMapping("Rotate Right",
+        inputManager.addMapping(InputMapping.ROTATE_RIGHT.getKeyPressed(),
                 new KeyTrigger(KeyInput.KEY_D),
                 new KeyTrigger(KeyInput.KEY_RIGHT));
-        inputManager.addMapping("Walk Forward",
+        inputManager.addMapping(InputMapping.WALK_FORWARD.getKeyPressed(),
                 new KeyTrigger(KeyInput.KEY_W),
                 new KeyTrigger(KeyInput.KEY_UP));
-        inputManager.addMapping("Walk Backward",
+        inputManager.addMapping(InputMapping.WALK_BACKWARD.getKeyPressed(),
                 new KeyTrigger(KeyInput.KEY_S),
                 new KeyTrigger(KeyInput.KEY_DOWN));
-        inputManager.addMapping("Action",
+        inputManager.addMapping(InputMapping.ACTION.getKeyPressed(),
                 new KeyTrigger(KeyInput.KEY_X));
         
-        inputManager.addMapping("Pause", new Trigger[]{
+        inputManager.addMapping(InputMapping.PAUSE.getKeyPressed(), new Trigger[]{
                 new KeyTrigger(KeyInput.KEY_P),new KeyTrigger(KeyInput.KEY_PAUSE)});
         
 
 
-        inputManager.addListener(this, "Rotate Left");
-        inputManager.addListener(this, "Rotate Right");
-        inputManager.addListener(this, "Walk Forward");
-        inputManager.addListener(this, "Walk Backward");
-        inputManager.addListener(this, "Action");
-        inputManager.addListener(this, "Pause");
+        inputManager.addListener(this, InputMapping.ROTATE_LEFT.getKeyPressed());
+        inputManager.addListener(this, InputMapping.ROTATE_RIGHT.getKeyPressed());
+        inputManager.addListener(this, InputMapping.WALK_FORWARD.getKeyPressed());
+        inputManager.addListener(this, InputMapping.WALK_BACKWARD.getKeyPressed());
+        inputManager.addListener(this, InputMapping.ACTION.getKeyPressed());
+        inputManager.addListener(this, InputMapping.PAUSE.getKeyPressed());
+       
+        
     }
+    
+    public void clearMappings(){
+        inputManager.deleteMapping(InputMapping.ROTATE_LEFT.getKeyPressed());
+        inputManager.deleteMapping(InputMapping.ROTATE_RIGHT.getKeyPressed());
+        inputManager.deleteMapping(InputMapping.WALK_FORWARD.getKeyPressed());
+        inputManager.deleteMapping(InputMapping.WALK_BACKWARD.getKeyPressed());
+        inputManager.deleteMapping(InputMapping.ACTION.getKeyPressed());
+        inputManager.deleteMapping(InputMapping.PAUSE.getKeyPressed());
+        inputManager.removeListener(this);
+        action = false;
+
+    }
+    
+    SceneGraphVisitor visitor = new SceneGraphVisitor() {
+
+  @Override
+  public void visit(Spatial spatial) {
+    System.out.println(spatial.getName());
+   
+  }
+
+};
 
     @Override
     public void onAction(String binding, boolean value, float tpf) {
         
         if(value){
+            gameState.getGuiNode().detachChildNamed("TextOverlay");
             gameState.setEnabled(true);
-            gameState.getGuiNode().detachAllChildren();
         }
             
-        
         if(!Main.FREE_CAMERA){
-            if (binding.equals("Rotate Left")) {
+            if (binding.equals(InputMapping.ROTATE_LEFT.getKeyPressed())) {
                 if (value) {
                     playerAnimComposer.setCurrentAction("walkCycle");
                     leftRotate = true;
@@ -131,7 +160,7 @@ public class PlayerAnimation implements ActionListener{
                      playerAnimComposer.setCurrentAction("breath");
                     leftRotate = false;
                 }
-            } else if (binding.equals("Rotate Right")) {
+            } else if (binding.equals(InputMapping.ROTATE_RIGHT.getKeyPressed())) {
                 if (value) {
                     playerAnimComposer.setCurrentAction("walkCycle");
                     rightRotate = true;
@@ -139,7 +168,7 @@ public class PlayerAnimation implements ActionListener{
                     playerAnimComposer.setCurrentAction("breath");
                     rightRotate = false;
                 }
-            } else if (binding.equals("Walk Forward")) {
+            } else if (binding.equals(InputMapping.WALK_FORWARD.getKeyPressed())) {
                 if (value) {
                     playerAnimComposer.setCurrentAction("walkCycle");
                     forward = true;
@@ -147,7 +176,7 @@ public class PlayerAnimation implements ActionListener{
                      playerAnimComposer.setCurrentAction("breath");
                     forward = false;
                 }
-            } else if (binding.equals("Walk Backward")) {
+            } else if (binding.equals(InputMapping.WALK_BACKWARD.getKeyPressed())) {
                 if (value) {
                     playerAnimComposer.setCurrentAction("walkCycle");
                     backward = true;
@@ -155,7 +184,7 @@ public class PlayerAnimation implements ActionListener{
                      playerAnimComposer.setCurrentAction("breath");
                     backward = false;
                 }
-            }else if (binding.equals("Action")) {
+            }else if (binding.equals(InputMapping.ACTION.getKeyPressed())) {
                 if (value) {
                     action = true;
                 } else {
