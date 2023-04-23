@@ -15,7 +15,8 @@ import br.gsj.re4j.triggers.TriggerDoor;
 import br.gsj.re4j.triggers.TriggerScene;
 import br.gsj.re4j.triggers.TriggerText;
 import br.gsj.re4j.enums.TriggerTypes;
-import br.gsj.re4j.utils.Utils;
+import br.gsj.re4j.helpers.NodesSpatialsHelper;
+import br.gsj.re4j.helpers.SceneChangerHelper;
 import com.jme3.anim.AnimComposer;
 import com.jme3.app.Application;
 import com.jme3.app.state.AbstractAppState;
@@ -38,6 +39,7 @@ import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.post.FilterPostProcessor;
 import com.jme3.post.filters.BloomFilter;
+import com.jme3.post.filters.FadeFilter;
 import com.jme3.renderer.Camera;
 import com.jme3.renderer.ViewPort;
 import com.jme3.renderer.queue.RenderQueue;
@@ -72,7 +74,7 @@ public class SceneGameState extends AbstractAppState{
 
     protected BulletAppState bulletAppState;
     private BetterCharacterControl playerControl;
-    private Node roomNode = new Node("Room Node");
+    private final Node roomNode = new Node("Room Node");
     private final Node guiNode;
     private Spatial currentScene;
     private Spatial player;
@@ -81,18 +83,19 @@ public class SceneGameState extends AbstractAppState{
     private PlayerAnimation playerAnim;
     private AnimComposer playerAnimComposer;
     private AudioNode backgroundMusic;
-    private final float walkingSpeed = 4.5f;
+    private final float walkingSpeed = 5.5f;
     private Vector3f playerWalkDirection = new Vector3f(0,0,0);
     private Vector3f classicMoveDir = new Vector3f(0,0,1);
     private AssetManager assetManager ;
     private Application application;
     private InputManager inputManager;
-    
+    private String mapXmlFile = "";
     private Camera cam ;
     public final FlyByCamera flyCam;
     
     private ViewPort pv;
     private  FilterPostProcessor fpp;
+    private final FadeFilter fade = new FadeFilter(1);
     
     private final int screenWidth;
     private final int screenHeight;
@@ -107,21 +110,39 @@ public class SceneGameState extends AbstractAppState{
     private String currentMap;
     
   
-    public SceneGameState(int height, int width,FlyByCamera flyCam, Node guiNode, String mapDefinition, String spawnPoint){
+    public SceneGameState(int height, int width,FlyByCamera flyCam, Node guiNode, String mapXmlFile, String spawnPoint){
         this.screenHeight = height;
         this.screenWidth = width;
         this.flyCam = flyCam;
         this.guiNode = guiNode;
         this.spawnPoint = spawnPoint;
-        readMapDefinition(mapDefinition);
+        this.mapXmlFile = mapXmlFile;
+    }
+    
+    @Override
+    public void initialize(AppStateManager stateManager, Application app) {
+        super.initialize(stateManager, app);
+        this.assetManager = app.getAssetManager();
+        this.inputManager = app.getInputManager();
+        this.application = app;
+        this.cam = application.getCamera();
+        this.bulletAppState = this.application.getStateManager().getState(BulletAppState.class);
+        pv = application.getRenderManager().createPreView("background", cam);
+        initializeState(this.mapXmlFile);
+        
     }
     
     public void changeMap(String destination, String nextSpawnPoint){
         System.out.println("change map: " + destination + " | " + nextSpawnPoint);
+        
         this.restart();
+        pv = application.getRenderManager().createPreView("background", cam);
+        //this.application.getViewPort().detachScene(this.roomNode);
+        //this.application.getViewPort().attachScene(doorState.getRootNode());
+        //this.stateManager.attach(doorState);
+        //this.stateManager.detach(this);
         this.spawnPoint = nextSpawnPoint;
-        readMapDefinition(destination);
-        initializeState();
+        initializeState(destination);
         
         
     }
@@ -188,6 +209,22 @@ public class SceneGameState extends AbstractAppState{
             doc.getDocumentElement().normalize();
             
             currentMap = doc.getDocumentElement().getAttribute("map");
+            
+            if(backgroundMusic != null){
+                backgroundMusic.stop();
+            }
+            
+            backgroundMusic = new AudioNode(assetManager,
+                        doc.getDocumentElement().getAttribute("music"),
+                        AudioData.DataType.Stream);
+                backgroundMusic.setLooping(true);
+                backgroundMusic.setPositional(false);
+                backgroundMusic.setDirectional(false);
+                backgroundMusic.play();
+                application.getAudioRenderer().setEnvironment(new Environment ( new float[]{ 2, 1.9f, 1f, -1000, -454, 0, 0.40f, 0.83f, 1f, -1646, 0.002f, 0f, 0f, 0f, 53, 0.003f, 0f, 0f, 0f, 0.250f, 0f, 0.250f, 0f, -5f, 5000f, 250f, 0f, 0x3f} ));
+                
+            
+            
             
             
             NodeList scenesTag = doc.getDocumentElement().getElementsByTagName("scenes");
@@ -282,9 +319,15 @@ public class SceneGameState extends AbstractAppState{
     }
 
     
-    private void initializeState(){
+    private void initializeState(String mapXmlFile){
+        
+        readMapDefinition(mapXmlFile);
+        
         Scene spawnScene = mapSpawnScene.get(spawnPoint);
-        backgroundPicture = setupBackground(spawnScene.getNextScene());                        
+        backgroundPicture = setupBackground(spawnScene.getNextScene());   
+        
+        
+        
         pv.setClearFlags(true, true, true);
         pv.attachScene(backgroundPicture);
         pv.attachScene(roomNode);
@@ -294,8 +337,11 @@ public class SceneGameState extends AbstractAppState{
         bloom.setEnabled(true);
         bloom.setBlurScale(3);
         bloom.setBloomIntensity(5);
+        
+        fpp.addFilter(fade);
         fpp.addFilter(bloom);
         pv.addProcessor(fpp);
+        fade.fadeIn();
         
         flyCam.setMoveSpeed(10);
         flyCam.setEnabled(false);
@@ -306,14 +352,6 @@ public class SceneGameState extends AbstractAppState{
         setupScene(spawnScene);
         roomNode.setShadowMode(RenderQueue.ShadowMode.CastAndReceive);
         
-        if(backgroundMusic == null){
-            backgroundMusic = new AudioNode(assetManager, "Sounds/background_music/MAIN07.SAP.wav",AudioData.DataType.Stream);
-            backgroundMusic.setLooping(true);
-            backgroundMusic.setPositional(false);
-            backgroundMusic.setDirectional(false);
-            backgroundMusic.play();
-            application.getAudioRenderer().setEnvironment(new Environment ( new float[]{ 2, 1.9f, 1f, -1000, -454, 0, 0.40f, 0.83f, 1f, -1646, 0.002f, 0f, 0f, 0f, 53, 0.003f, 0f, 0f, 0f, 0.250f, 0f, 0.250f, 0f, -5f, 5000f, 250f, 0f, 0x3f} ));
-        }
         
         backgroundPicture.updateGeometricState();
         
@@ -330,7 +368,6 @@ public class SceneGameState extends AbstractAppState{
     @Override
     public void update(float tpf) {
         super.update(tpf);
-
         roomNode.updateLogicalState(tpf);
         roomNode.updateGeometricState();
         guiNode.updateLogicalState(tpf);
@@ -345,24 +382,6 @@ public class SceneGameState extends AbstractAppState{
      
     }
 
-    @Override
-    public void initialize(AppStateManager stateManager, Application app) {
-        super.initialize(stateManager, app);
-        this.assetManager = app.getAssetManager();
-        this.inputManager = app.getInputManager();
-        this.application = app;
-        this.cam = application.getCamera();
-        this.bulletAppState = this.application.getStateManager().getState(BulletAppState.class);
-        pv = application.getRenderManager().createPreView("background", cam);
-        initializeState();
-    }
-    
-   
-    
-    
-
-   
-    
     
     public void traditionalPlayerMove(){
         Vector3f dir = classicMoveDir.clone().multLocal(walkingSpeed);
@@ -451,7 +470,7 @@ public class SceneGameState extends AbstractAppState{
         playerAnim = new PlayerAnimation(playerAnimComposer, inputManager,assetManager,this);
         
         
-        List<Spatial> frontNode = Utils.getSpatialsFromNode((Node) player, "front");
+        List<Spatial> frontNode = NodesSpatialsHelper.getSpatialsFromNode((Node) player, "front");
         for(Spatial node: frontNode){
              //System.out.println(node.getName());
              CollisionShape cs = CollisionShapeFactory.createBoxShape(node);
@@ -487,9 +506,6 @@ public class SceneGameState extends AbstractAppState{
         // set forward camera node that follows the character
         camNode = new CameraNode("CamNode", cam);
         camNode.setControlDir(CameraControl.ControlDirection.SpatialToCamera);
-
-        camNode.setLocalTranslation(loc);
-        camNode.setLocalRotation(rot);
         
         if(!FREE_CAMERA)
             roomNode.attachChild(camNode);        
@@ -497,10 +513,22 @@ public class SceneGameState extends AbstractAppState{
         currentScene = assetManager.loadModel(currentMap);
         roomNode.attachChild(currentScene);
         
+        SceneChangerHelper.checkAndInsertAlphaOnScene(
+                assetManager,
+                camNode,
+                guiNode,
+                roomNode,
+                backgroundPicture,
+                spawnScene.getNextScene(),
+                screenWidth,
+                screenHeight,
+                loc,
+                rot);
+        
         spawnPlayer(mapSpawnPoint.get(spawnPoint).getDirection());
         
-        List<Spatial> listFloors = Utils.getSpatialsFromNode(roomNode, "floor");
-        List<Spatial> listWalls = Utils.getSpatialsFromNode(roomNode, "wall");
+        List<Spatial> listFloors = NodesSpatialsHelper.getSpatialsFromNode(roomNode, "floor");
+        List<Spatial> listWalls = NodesSpatialsHelper.getSpatialsFromNode(roomNode, "wall");
         
         Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
         mat.getAdditionalRenderState().setWireframe(true);
@@ -532,7 +560,7 @@ public class SceneGameState extends AbstractAppState{
         }
         
         for(Entry<String,TriggerScene> entry: mapTriggerScene.entrySet()){
-            Spatial trigger = Utils.getSpatialFromNode(roomNode,entry.getKey());
+            Spatial trigger = NodesSpatialsHelper.getSpatialFromNode(roomNode,entry.getKey());
             
             TriggerScene triggerScene = mapTriggerScene.get(trigger.getName());
                 trigger.setUserData("camLocation", triggerScene.getScene().getCamLocation());
@@ -550,7 +578,7 @@ public class SceneGameState extends AbstractAppState{
         }
                
         for(Entry<String,TriggerText> entry: mapTriggerText.entrySet()){
-            Spatial trigger = Utils.getSpatialFromNode(roomNode,entry.getKey());
+            Spatial trigger = NodesSpatialsHelper.getSpatialFromNode(roomNode,entry.getKey());
             CollisionShape cs = CollisionShapeFactory.createBoxShape(trigger);   
                 TextDisplayControl tdc =
                         new TextDisplayControl(trigger.getName(),
@@ -564,7 +592,7 @@ public class SceneGameState extends AbstractAppState{
         }
                 
         for(Entry<String,TriggerDoor> entry: mapTriggerDoor.entrySet()){
-            Spatial trigger = Utils.getSpatialFromNode(roomNode,entry.getKey());
+            Spatial trigger = NodesSpatialsHelper.getSpatialFromNode(roomNode,entry.getKey());
             CollisionShape cs = CollisionShapeFactory.createBoxShape(trigger);   
                 DoorControl dc =
                         new DoorControl(trigger.getName(),
@@ -573,7 +601,6 @@ public class SceneGameState extends AbstractAppState{
                                 roomNode,playerAnim,cs,this);
                 trigger.addControl(dc);
                 trigger.setCullHint(Spatial.CullHint.Always);
-                System.out.println(mapTriggerDoor.get(trigger.getName()).getDestination());
                 bulletAppState.getPhysicsSpace().addCollisionListener(dc);
                 bulletAppState.getPhysicsSpace().add(trigger.getControl(GhostControl.class));   
         }
@@ -582,7 +609,7 @@ public class SceneGameState extends AbstractAppState{
     
     private Picture setupBackground(String img) {
         Picture p = new Picture("background");
-        p.setImage(assetManager, img, false);
+        //p.setImage(assetManager, img, true);
         p.setWidth(this.screenWidth);
         p.setHeight(this.screenHeight);
         p.setPosition(0, 0);
