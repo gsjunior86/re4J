@@ -6,7 +6,7 @@ package br.gsj.re4j.control;
 
 import br.gsj.re4j.anim.PlayerAnimation;
 import br.gsj.re4j.main.SceneGameState;
-import br.gsj.re4j.utils.Utils;
+import br.gsj.re4j.helpers.NodesSpatialsHelper;
 import com.jme3.bullet.collision.PhysicsCollisionEvent;
 import com.jme3.bullet.collision.PhysicsCollisionListener;
 import com.jme3.bullet.collision.shapes.CollisionShape;
@@ -54,8 +54,6 @@ public class TextDisplayControl extends GhostControl implements PhysicsCollision
     @Override
     public void update(float tpf) {
         super.update(tpf);
-        if(this.isShow)
-            System.out.println("Trigger: " + triggerName + " | " + tpf);
     }
     
     
@@ -65,11 +63,14 @@ public class TextDisplayControl extends GhostControl implements PhysicsCollision
         //System.out.println(event.getNodeA().getName() + " | " + event.getNodeB().getName());
         if(event.getNodeA().getName().startsWith("front") && playerAL.isAction()
                 && event.getNodeB().getName().equals(this.triggerName)){
-            if(Utils.getMatchSpatialsFromNode(guiNode, "TextOverlay").isEmpty())
+            if(NodesSpatialsHelper.getMatchSpatialsFromNode(guiNode, "TextOverlay").isEmpty())
                 guiNode.attachChild(hudText);
             isShow = true;                
             gameState.setEnabled(false);
+        }else{
+            isShow = false;
         }
+        
         
         /*if(!gameState.isEnabled())
             guiNode.attachChild(hudText);*/
