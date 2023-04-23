@@ -7,7 +7,8 @@ package br.gsj.re4j.control;
 
 
 
-import br.gsj.re4j.utils.Utils;
+import br.gsj.re4j.helpers.NodesSpatialsHelper;
+import br.gsj.re4j.helpers.SceneChangerHelper;
 import com.jme3.asset.AssetManager;
 import com.jme3.bullet.collision.PhysicsCollisionEvent;
 import com.jme3.bullet.collision.PhysicsCollisionListener;
@@ -61,38 +62,8 @@ public class SceneChangerControl extends GhostControl implements PhysicsCollisio
         if(event.getNodeA().getName().startsWith("player") && event.getNodeB().getName().equals(triggerName)){
             
             String backgroundFile = event.getNodeB().getUserData(SCENE_CHANGER).toString();
-            
-            
-            String alphaName =
-                    backgroundFile.substring(0,backgroundFile.lastIndexOf("/"))
-                            .concat("/"+
-                    backgroundFile.substring(backgroundFile.lastIndexOf("/")+1,backgroundFile.lastIndexOf(".")).concat("_a.png"));            
-            
-            //guiNode.detachAllChildren();
-            Picture alphaLayer = new Picture("AlphaLayer");        
-            alphaLayer.setWidth(SCREEN_WIDTH);
-            alphaLayer.setHeight(SCREEN_HEIGHT);
-            Material mat0 = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-            try{
-                mat0.setTexture("ColorMap", assetManager.loadTexture(alphaName));
-                mat0.getAdditionalRenderState().setBlendMode(RenderState.BlendMode.Alpha);
-                alphaLayer.setMaterial(mat0);
-                if(Utils.getMatchSpatialsFromNode(guiNode, "AlphaLayer").isEmpty())
-                    guiNode.attachChild(alphaLayer);
-                
-            }catch(com.jme3.asset.AssetNotFoundException ex){
-                    //System.out.println("Could not find: " + alphaName);
-                    guiNode.detachChildNamed("AlphaLayer");
-                    alphaLayer = null;
-                    mat0 = null;
-            }
-            
            
-            
-            this.backgroundPicture.setImage(assetManager,
-                    backgroundFile,
-                    true);
-            
+
             String[] rotArray = event.getNodeB().getUserData("camRotation").toString().split(",");
             String[] locArray = event.getNodeB().getUserData("camLocation").toString().split(",");
             
@@ -108,10 +79,19 @@ public class SceneChangerControl extends GhostControl implements PhysicsCollisio
                     Float.parseFloat(rotArray[2]),
                     Float.parseFloat(rotArray[3]));
             
-            camNode.setLocalRotation(rot);
-            camNode.setLocalTranslation(loc);
-            roomNode.updateGeometricState();
-            guiNode.updateGeometricState();
+            SceneChangerHelper.checkAndInsertAlphaOnScene(
+                    assetManager,
+                    camNode,
+                    guiNode,
+                    roomNode,
+                    backgroundPicture,
+                    backgroundFile,
+                    SCREEN_WIDTH,
+                    SCREEN_HEIGHT,
+                    loc,
+                    rot);
+            
+            
         }
             
         
