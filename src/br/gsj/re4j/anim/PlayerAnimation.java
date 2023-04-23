@@ -8,7 +8,7 @@ package br.gsj.re4j.anim;
 import br.gsj.re4j.enums.InputMapping;
 import br.gsj.re4j.main.Main;
 import br.gsj.re4j.main.SceneGameState;
-import br.gsj.re4j.utils.Utils;
+import br.gsj.re4j.helpers.NodesSpatialsHelper;
 import com.jme3.anim.AnimComposer;
 import com.jme3.anim.tween.Tween;
 import com.jme3.anim.tween.Tweens;
