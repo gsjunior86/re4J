@@ -6,55 +6,63 @@ Click nbfs://nbhost/SystemFileSystem/Templates/XML/XMLDocument.xml to edit this 
 
 
 
-<map map="Scenes/maps/rpd/stairwell.j3o">
+<map map="Scenes/maps/rpd/darkroom.j3o" music="Sounds/background_music/MAIN0C.SAP.wav">
 
     <scenes>
     
     	<scene name="scene_1">
-    	    <camLocation>15.169064, 6.051987, 2.7805796</camLocation>
-            <camRotation>0.0077047423, -0.82605225, 0.011292024F, 0.5634277</camRotation>
-            <nextScene>Textures/rooms/rpd/stairwell/stairwell_1.png</nextScene>
+    	    <camLocation>12.240402, 7.275223, 18.237217</camLocation>
+            <camRotation>0.04390758, -0.8361848, 0.06767915, 0.5424819</camRotation>
+            <nextScene>Textures/rooms/rpd/dark_room/dark_room1.png</nextScene>
     	</scene>
-    	
-    	<scene name="scene_2">
-    	    <camLocation>45.978283, 7.787435, 4.6403794</camLocation>
-            <camRotation>0.012824874, -0.8021301, 0.01723506, 0.5967627</camRotation>
-            <nextScene>Textures/rooms/rpd/stairwell/stairwell_2.png</nextScene>
-    	</scene>
-    	
-    	<scene name ="scene_3">
-    	    <camLocation>48.17761, 23.341522, 27.522324</camLocation>
-            <camRotation>-0.05873629, 0.9404999, -0.25537348, -0.21632014</camRotation>
-            <nextScene>Textures/rooms/rpd/stairwell/stairwell_3.png</nextScene>
-    	</scene>
+  	
            
     </scenes>
     
     <!--2132-->
     
     <triggers>
+        
+        <trigger name="trigger_door_1" type = "door"
+                 destination="Scenes/definitions/rpd/stairwell.xml"
+                 open_sound="Sounds/sfx/door_open.wav"
+                 close_sound="Sounds/sfx/door_close.wav"
+                 spawn="player_spawn_3"/>
+        <!--
         <trigger name="trigger_scene_1" type = "scene" scene = "scene_2" />
         <trigger name="trigger_scene_2" type = "scene" scene = "scene_1" />
         <trigger name="trigger_scene_3" type = "scene" scene = "scene_3" />
         <trigger name="trigger_scene_4" type = "scene" scene = "scene_2" />
+        <trigger name="trigger_scene_5" type = "scene" scene = "scene_4" />
+        <trigger name="trigger_scene_6" type = "scene" scene = "scene_3" />
+        <trigger name="trigger_scene_7" type = "scene" scene = "scene_5" />
+        <trigger name="trigger_scene_8" type = "scene" scene = "scene_4" />
 
 
         <trigger name="trigger_text_1" type = "text">
-            <text>This area is not ready yet...</text>
+            <text>This area is not accessible on this demo...</text>
         </trigger>
         
         <trigger name="trigger_text_window_1" type = "text">
             <text>It is too dark to see something outside.</text>
         </trigger>
-               
+        
+        <trigger name="trigger_text_2" type = "text">
+            <text>This area is not accessible on this demo...</text>
+        </trigger>
+        -->
+        
+        <!--
         <trigger name="trigger_door_1" type = "door"
                  destination="Scenes/definitions/rpd/corridor.xml"
                  spawn="player_spawn_1"/>
+        -->
     </triggers>
     
     <spawns>
-    	<spawn name="player_spawn_1" scene="scene_1" direction="0"/>
-        <spawn name="player_spawn_2" scene="scene_2" direction="0"/>
+    	<spawn name="player_spawn_1" scene="scene_1" direction="-90"/>
+        
+        
     </spawns>
 
 </map>
