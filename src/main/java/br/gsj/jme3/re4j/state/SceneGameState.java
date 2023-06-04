@@ -108,12 +108,12 @@ public class SceneGameState extends AbstractAppState {
     private String spawnPoint;
     private String nextMap;
 
-    private final Map<String, TriggerScene> mapTriggerScene = new HashMap<>();
-    private final Map<String, Scene> mapScenes = new HashMap<>();
-    private final Map<String, Scene> mapSpawnScene = new HashMap<>();
-    private final Map<String, SpawnPoint> mapSpawnPoint = new HashMap<>();
-    private final Map<String, TriggerText> mapTriggerText = new HashMap<>();
-    private final Map<String, TriggerDoor> mapTriggerDoor = new HashMap<>();
+    private final Map<String, TriggerScene> mapTriggerScene = new HashMap<String,TriggerScene>();
+    private final Map<String, Scene> mapScenes = new HashMap<String, Scene>();
+    private final Map<String, Scene> mapSpawnScene = new HashMap<String, Scene>();
+    private final Map<String, SpawnPoint> mapSpawnPoint = new HashMap<String, SpawnPoint>();
+    private final Map<String, TriggerText> mapTriggerText = new HashMap<String, TriggerText>();
+    private final Map<String, TriggerDoor> mapTriggerDoor = new HashMap<String, TriggerDoor>();
     private String currentMap;
 
     public SceneGameState(int height, int width, FlyByCamera flyCam, Node guiNode, String mapXmlFile, String spawnPoint) {
@@ -152,18 +152,6 @@ public class SceneGameState extends AbstractAppState {
         this.spawnPoint = nextSpawnPoint;
         this.nextMap = destination;
         fade.fadeOut();
-
-
-
-/*        this.restart();
-        pv = application.getRenderManager().createPreView("background", cam);
-
-
-
-
-/*
-        initializeState(destination);
-        fade.fadeIn();*/
 
 
     }
