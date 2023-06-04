@@ -7,6 +7,7 @@ package br.gsj.jme3.re4j.control;
 
 import br.gsj.jme3.re4j.anim.PlayerAnimation;
 import br.gsj.jme3.re4j.helpers.NodesSpatialsHelper;
+import br.gsj.jme3.re4j.helpers.SceneChangerHelper;
 import br.gsj.jme3.re4j.state.SceneGameState;
 import com.jme3.bullet.collision.PhysicsCollisionEvent;
 import com.jme3.bullet.collision.PhysicsCollisionListener;
@@ -32,6 +33,9 @@ public class TextDisplayControl extends GhostControl implements PhysicsCollision
     private final SceneGameState gameState;
     private float lastFrameTime;
     private boolean isShow = false;
+
+    private boolean isOverlapping;
+
     
     
     public TextDisplayControl(String triggerName,String text, Node guiNode,Node roomNode,
@@ -55,29 +59,25 @@ public class TextDisplayControl extends GhostControl implements PhysicsCollision
     @Override
     public void update(float tpf) {
         super.update(tpf);
+
+        if(isOverlapping && playerAL.isAction()){
+            if(NodesSpatialsHelper.getMatchSpatialsFromNode(guiNode, "TextOverlay").isEmpty())
+                guiNode.attachChild(hudText);
+            isShow = true;
+            gameState.setEnabled(false);
+        }else{
+            isShow = false;
+        }
+
+        roomNode.updateGeometricState();
+        guiNode.updateGeometricState();
     }
     
     
 
     @Override
     public void collision(PhysicsCollisionEvent event) {
-        if(event.getNodeA().getName().startsWith("front") && playerAL.isAction()
-                && event.getNodeB().getName().equals(this.triggerName)){
-            if(NodesSpatialsHelper.getMatchSpatialsFromNode(guiNode, "TextOverlay").isEmpty())
-                guiNode.attachChild(hudText);
-            isShow = true;                
-            gameState.setEnabled(false);
-        }else{
-            isShow = false;
-        }
-        
-        
-        /*if(!gameState.isEnabled())
-            guiNode.attachChild(hudText);*/
-            
-        
-        roomNode.updateGeometricState();
-        guiNode.updateGeometricState();
+        this.isOverlapping = SceneChangerHelper.isOverlapping(this.getOverlappingObjects(),"front");
     }
     
 }
