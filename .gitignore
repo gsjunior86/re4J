@@ -1,6 +1,8 @@
 assets/
+assets/*
 *.so
 target/
 *.class
 .project/
 .idea/
+*.iml
