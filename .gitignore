@@ -1,12 +1,6 @@
-dist/
-build/classes
-build/empty
-build/generated-sources/
-build/assets.jar
-build/
-nbproject/
-blender/
-*.log
+assets/
 *.so
-*.html
-*.jnlp
+target/
+*.class
+.project/
+.idea/
