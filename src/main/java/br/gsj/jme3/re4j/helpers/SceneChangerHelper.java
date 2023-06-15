@@ -50,9 +50,8 @@ public class SceneChangerHelper {
             mat0.setTexture("ColorMap", assetManager.loadTexture(alphaName));
             mat0.getAdditionalRenderState().setBlendMode(RenderState.BlendMode.Alpha);
             alphaLayer.setMaterial(mat0);
-            if (NodesSpatialsHelper.getMatchSpatialsFromNode(guiNode, "AlphaLayer").isEmpty()) {
+            if (NodesSpatialsHelper.getMatchSpatialsFromNode(guiNode, "AlphaLayer") == null)
                 guiNode.attachChild(alphaLayer);
-            }
 
         } catch (com.jme3.asset.AssetNotFoundException ex) {
 
