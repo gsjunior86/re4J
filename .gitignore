@@ -5,3 +5,4 @@ target/
 .idea/
 *.iml
 assets/
+/src/main/java/br/gsj/jme3/re4j/main/Main.java
