@@ -61,7 +61,7 @@ public class TextDisplayControl extends GhostControl implements PhysicsCollision
         super.update(tpf);
 
         if(isOverlapping && playerAL.isAction()){
-            if(NodesSpatialsHelper.getMatchSpatialsFromNode(guiNode, "TextOverlay").isEmpty())
+            if(NodesSpatialsHelper.getMatchSpatialsFromNode(guiNode, "TextOverlay") == null)
                 guiNode.attachChild(hudText);
             isShow = true;
             gameState.setEnabled(false);

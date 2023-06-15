@@ -11,6 +11,7 @@ import com.jme3.scene.Spatial;
 import java.util.ArrayList;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -51,18 +52,16 @@ public class NodesSpatialsHelper {
         return listSpatials;
     }
     
-    public static List<Spatial> getMatchSpatialsFromNode(Node n, final String s) {
+    public static Spatial getMatchSpatialsFromNode(Node n, final String s) {
         final List<Spatial> listSpatials = new ArrayList<Spatial>();
-
+        AtomicReference<Spatial> foundSpatial = new AtomicReference<Spatial>();
         SceneGraphVisitor visitor = (Spatial spatial) -> {
             if (spatial.getName() != null && spatial.getName().equals(s)) {
-                listSpatials.add(spatial);
+                foundSpatial.set(spatial);
             }
         };
-        
         n.depthFirstTraversal(visitor);
-
-        return listSpatials;
+        return foundSpatial.get();
     }
     
     public static Spatial getSpatialFromNode(Node n, final String s){
