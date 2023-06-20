@@ -64,7 +64,7 @@ import org.xml.sax.SAXException;
  *
  * @author gsjunior
  */
-public class SceneGameState extends AbstractAppState {
+public class PreRenderedSceneGameState extends AbstractAppState {
 
     protected BulletAppState bulletAppState;
     private BetterCharacterControl playerControl;
@@ -90,8 +90,8 @@ public class SceneGameState extends AbstractAppState {
 
     public static boolean FREE_CAMERA = false;
 
-    private ViewPort preView;
-    private ViewPort mainView;
+    private ViewPort preRenderedView;
+    private ViewPort modelsView;
 
     private FilterPostProcessor fpp;
 
@@ -116,14 +116,13 @@ public class SceneGameState extends AbstractAppState {
     private final Map<String, TriggerDoor> mapTriggerDoor = new HashMap<String, TriggerDoor>();
     private String currentMap;
 
-    public SceneGameState(int height, int width, FlyByCamera flyCam, Node guiNode, String mapXmlFile, String spawnPoint) {
+    public PreRenderedSceneGameState(int height, int width, FlyByCamera flyCam, Node guiNode, String mapXmlFile, String spawnPoint) {
         this.screenHeight = height;
         this.screenWidth = width;
         this.flyCam = flyCam;
         this.guiNode = guiNode;
         this.spawnPoint = spawnPoint;
         this.mapXmlFile = mapXmlFile;
-
     }
 
     @Override
@@ -134,9 +133,9 @@ public class SceneGameState extends AbstractAppState {
         this.application = app;
         this.cam = application.getCamera();
         this.bulletAppState = this.application.getStateManager().getState(BulletAppState.class);
-        if (preView == null || mainView == null) {
-            preView = application.getRenderManager().createPreView("background", cam);
-            mainView = application.getRenderManager().createMainView("scene", cam);
+        if (preRenderedView == null || modelsView == null) {
+            preRenderedView = application.getRenderManager().createPreView("background", cam);
+            modelsView = application.getRenderManager().createMainView("scene", cam);
         }
         //openDoor = new AudioNode(assetManager, "Sounds/sfx/door_open.wav",DataType.Buffer);
         //closeDoor = new AudioNode(assetManager,"Sounds/sfx/door_close.wav",DataType.Buffer);
@@ -152,7 +151,6 @@ public class SceneGameState extends AbstractAppState {
         this.spawnPoint = nextSpawnPoint;
         this.nextMap = destination;
         fade.fadeOut();
-
 
     }
 
@@ -177,8 +175,8 @@ public class SceneGameState extends AbstractAppState {
         //backgroundMusic.stop();
         //backgroundMusic = null;
 
-        preView.detachScene(backgroundPicture);
-        preView.removeProcessor(fpp);
+        preRenderedView.detachScene(backgroundPicture);
+        preRenderedView.removeProcessor(fpp);
 
         roomNode.detachAllChildren();
         guiNode.detachAllChildren();
@@ -320,11 +318,11 @@ public class SceneGameState extends AbstractAppState {
         backgroundPicture = setupBackground(spawnScene.getNextScene());
 
 
-        preView.setClearFlags(true, true, true);
-        preView.attachScene(backgroundPicture);
+        preRenderedView.setClearFlags(true, true, true);
+        preRenderedView.attachScene(backgroundPicture);
 
-        mainView.attachScene(roomNode);
-        mainView.attachScene(guiNode);
+        modelsView.attachScene(roomNode);
+        modelsView.attachScene(guiNode);
         //mainView.setClearFlags(false, true, false);
         //mainView.setBackgroundColor(ColorRGBA.Blue);
 
@@ -336,7 +334,7 @@ public class SceneGameState extends AbstractAppState {
 
         fpp.addFilter(fade);
         fpp.addFilter(bloom);
-        preView.addProcessor(fpp);
+        preRenderedView.addProcessor(fpp);
         //mainView.addProcessor(fpp);
 
         flyCam.setMoveSpeed(10);
