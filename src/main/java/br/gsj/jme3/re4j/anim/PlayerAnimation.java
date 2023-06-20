@@ -6,7 +6,7 @@
 package br.gsj.jme3.re4j.anim;
 
 import br.gsj.jme3.re4j.enums.InputMapping;
-import br.gsj.jme3.re4j.state.SceneGameState;
+import br.gsj.jme3.re4j.state.PreRenderedSceneGameState;
 import com.jme3.anim.AnimComposer;
 import com.jme3.anim.tween.Tween;
 import com.jme3.anim.tween.Tweens;
@@ -44,11 +44,11 @@ public class PlayerAnimation implements ActionListener{
     private boolean forward = false, backward = false,
             leftRotate = false, rightRotate = false,action = false;
     
-    private final SceneGameState sceneGameState;
+    private final PreRenderedSceneGameState sceneGameState;
     
     
     public PlayerAnimation(AnimComposer playerAnimComposer, InputManager inputManager,
-            AssetManager assetManager, SceneGameState gameState){
+            AssetManager assetManager, PreRenderedSceneGameState gameState){
         
         this.playerAnimComposer = playerAnimComposer;
         this.inputManager = inputManager;
