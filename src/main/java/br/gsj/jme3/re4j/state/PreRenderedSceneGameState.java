@@ -4,12 +4,14 @@ import br.gsj.jme3.re4j.anim.PlayerAnimation;
 import br.gsj.jme3.re4j.control.DoorControl;
 import br.gsj.jme3.re4j.control.SceneChangerControl;
 import br.gsj.jme3.re4j.control.TextDisplayControl;
+import br.gsj.jme3.re4j.enums.PlayerSFXEnum;
 import br.gsj.jme3.re4j.map.Scene;
 import br.gsj.jme3.re4j.map.SpawnPoint;
+import br.gsj.jme3.re4j.sfx.PlayerSFX;
 import br.gsj.jme3.re4j.triggers.TriggerDoor;
 import br.gsj.jme3.re4j.triggers.TriggerScene;
 import br.gsj.jme3.re4j.triggers.TriggerText;
-import br.gsj.jme3.re4j.enums.TriggerTypes;
+import br.gsj.jme3.re4j.enums.TriggerTypesEnum;
 import br.gsj.jme3.re4j.helpers.NodesSpatialsHelper;
 import br.gsj.jme3.re4j.helpers.SceneChangerHelper;
 import com.jme3.anim.AnimComposer;
@@ -114,6 +116,8 @@ public class PreRenderedSceneGameState extends AbstractAppState {
     private final Map<String, SpawnPoint> mapSpawnPoint = new HashMap<String, SpawnPoint>();
     private final Map<String, TriggerText> mapTriggerText = new HashMap<String, TriggerText>();
     private final Map<String, TriggerDoor> mapTriggerDoor = new HashMap<String, TriggerDoor>();
+
+    private PlayerSFX playerSFX;
     private String currentMap;
 
     public PreRenderedSceneGameState(int height, int width, FlyByCamera flyCam, Node guiNode, String mapXmlFile, String spawnPoint) {
@@ -137,21 +141,16 @@ public class PreRenderedSceneGameState extends AbstractAppState {
             preRenderedView = application.getRenderManager().createPreView("background", cam);
             modelsView = application.getRenderManager().createMainView("scene", cam);
         }
-        //openDoor = new AudioNode(assetManager, "Sounds/sfx/door_open.wav",DataType.Buffer);
-        //closeDoor = new AudioNode(assetManager,"Sounds/sfx/door_close.wav",DataType.Buffer);
         initializeState(this.mapXmlFile);
-        //pv.attachScene(player);
 
     }
 
     public void changeMap(String destination, String nextSpawnPoint) {
-
         changeMap = true;
         openDoor.play();
         this.spawnPoint = nextSpawnPoint;
         this.nextMap = destination;
         fade.fadeOut();
-
     }
 
     public void restart() {
@@ -226,88 +225,120 @@ public class PreRenderedSceneGameState extends AbstractAppState {
             application.getAudioRenderer().setEnvironment(new Environment(new float[]{2, 1.9f, 1f, -1000, -454, 0, 0.40f, 0.83f, 1f, -1646, 0.002f, 0f, 0f, 0f, 53, 0.003f, 0f, 0f, 0f, 0.250f, 0f, 0.250f, 0f, -5f, 5000f, 250f, 0f, 0x3f}));
 
             NodeList scenesTag = doc.getDocumentElement().getElementsByTagName("scenes");
+            readScenes(scenesTag);
 
-//            NodeList scenes = doc.getDocumentElement().getElementsByTagName("triggers");
-            for (int i = 0; i < scenesTag.getLength(); i++) {
-                NodeList childList = scenesTag.item(i).getChildNodes();
-                for (int j = 0; j < childList.getLength(); j++) {
-                    org.w3c.dom.Node childNode = childList.item(j);
-                    if (childNode.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
-                        Element element = (Element) childNode;
-                        String name = element.getAttribute("name");
-
-                        Scene scene = new Scene(
-                                name,
-                                element.getElementsByTagName("camLocation").item(0).getTextContent(),
-                                element.getElementsByTagName("camRotation").item(0).getTextContent(),
-                                element.getElementsByTagName("nextScene").item(0).getTextContent()
-                        );
-                        mapScenes.put(name, scene);
-                    }
-                }
-            }
+            NodeList sfxTag = doc.getDocumentElement().getElementsByTagName("sfx");
+            readSFX(sfxTag);
 
             NodeList triggersTag = doc.getDocumentElement().getElementsByTagName("triggers");
-
-            for (int i = 0; i < triggersTag.getLength(); i++) {
-                NodeList childList = triggersTag.item(i).getChildNodes();
-                for (int j = 0; j < childList.getLength(); j++) {
-                    org.w3c.dom.Node childNode = childList.item(j);
-                    if (childNode.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
-                        Element element = (Element) childNode;
-                        String name = element.getAttribute("name");
-                        String type = element.getAttribute("type");
-                        String scene = element.getAttribute("scene");
-
-                        if (type.equalsIgnoreCase(TriggerTypes.SCENE.getType())) {
-                            Scene sceneMapped = mapScenes.get(scene);
-                            TriggerScene triggerScene = new TriggerScene(
-                                    name,
-                                    sceneMapped
-                            );
-                            mapTriggerScene.put(name, triggerScene);
-                        } else if (type.equalsIgnoreCase(TriggerTypes.TEXT.getType())) {
-                            TriggerText triggerText = new TriggerText(name,
-                                    element.getElementsByTagName("text").item(0).getTextContent());
-                            mapTriggerText.put(name, triggerText);
-                        } else if (type.equalsIgnoreCase(TriggerTypes.DOOR.getType())) {
-                            TriggerDoor triggerDoor = new TriggerDoor(name,
-                                    element.getAttribute("destination"),
-                                    element.getAttribute("spawn"),
-                                    element.getAttribute("open_sound"),
-                                    element.getAttribute("close_sound"));
-                            mapTriggerDoor.put(name, triggerDoor);
-                        }
-
-                    }
-                }
-
-            }
+            readTriggers(triggersTag);
 
             NodeList spawnsTag = doc.getDocumentElement().getElementsByTagName("spawns");
+            readSpawnPoints(spawnsTag);
 
-            for (int i = 0; i < spawnsTag.getLength(); i++) {
-                NodeList childList = spawnsTag.item(i).getChildNodes();
-                for (int j = 0; j < childList.getLength(); j++) {
-                    org.w3c.dom.Node childNode = childList.item(j);
-                    if (childNode.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
-                        Element element = (Element) childNode;
-                        String name = element.getAttribute("name");
-                        String sceneName = element.getAttribute("scene");
-                        int direction = Integer.parseInt(element.getAttribute("direction"));
-                        SpawnPoint spawnPoint = new SpawnPoint(name, sceneName, direction);
-                        mapSpawnPoint.put(name, spawnPoint);
-                        mapSpawnScene.put(name, mapScenes.get(sceneName));
-
-                    }
-                }
-
-            }
 
         } catch (ParserConfigurationException | SAXException | IOException e) {
             e.printStackTrace();
         }
 
+    }
+
+    private void readSFX(NodeList sfxTag){
+        for (int i = 0; i < sfxTag.getLength(); i++) {
+            NodeList childList= sfxTag.item(i).getChildNodes();
+            String step_l = "";
+            String step_r = "";
+            for (int j = 0; j < childList.getLength(); j++) {
+                org.w3c.dom.Node childNode = childList.item(j);
+                if (childNode.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
+                    Element element = (Element) childNode;
+                    if(element.getAttribute("type").equals(PlayerSFXEnum.STEP_L.getStep()))
+                        step_l = element.getAttribute("src");
+                    else if(element.getAttribute("type").equals(PlayerSFXEnum.STEP_R.getStep()))
+                        step_r = element.getAttribute("src");
+                }
+
+            }
+            playerSFX = new PlayerSFX(step_l,step_r);
+        }
+    }
+
+    private void readScenes(NodeList scenesTag){
+        for (int i = 0; i < scenesTag.getLength(); i++) {
+            NodeList childList = scenesTag.item(i).getChildNodes();
+            for (int j = 0; j < childList.getLength(); j++) {
+                org.w3c.dom.Node childNode = childList.item(j);
+                if (childNode.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
+                    Element element = (Element) childNode;
+                    String name = element.getAttribute("name");
+
+                    Scene scene = new Scene(
+                            name,
+                            element.getElementsByTagName("camLocation").item(0).getTextContent(),
+                            element.getElementsByTagName("camRotation").item(0).getTextContent(),
+                            element.getElementsByTagName("nextScene").item(0).getTextContent()
+                    );
+                    mapScenes.put(name, scene);
+                }
+            }
+        }
+    }
+
+    private void readTriggers(NodeList triggersTag){
+        for (int i = 0; i < triggersTag.getLength(); i++) {
+            NodeList childList = triggersTag.item(i).getChildNodes();
+            for (int j = 0; j < childList.getLength(); j++) {
+                org.w3c.dom.Node childNode = childList.item(j);
+                if (childNode.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
+                    Element element = (Element) childNode;
+                    String name = element.getAttribute("name");
+                    String type = element.getAttribute("type");
+                    String scene = element.getAttribute("scene");
+
+                    if (type.equalsIgnoreCase(TriggerTypesEnum.SCENE.getType())) {
+                        Scene sceneMapped = mapScenes.get(scene);
+                        TriggerScene triggerScene = new TriggerScene(
+                                name,
+                                sceneMapped
+                        );
+                        mapTriggerScene.put(name, triggerScene);
+                    } else if (type.equalsIgnoreCase(TriggerTypesEnum.TEXT.getType())) {
+                        TriggerText triggerText = new TriggerText(name,
+                                element.getElementsByTagName("text").item(0).getTextContent());
+                        mapTriggerText.put(name, triggerText);
+                    } else if (type.equalsIgnoreCase(TriggerTypesEnum.DOOR.getType())) {
+                        TriggerDoor triggerDoor = new TriggerDoor(name,
+                                element.getAttribute("destination"),
+                                element.getAttribute("spawn"),
+                                element.getAttribute("open_sound"),
+                                element.getAttribute("close_sound"));
+                        mapTriggerDoor.put(name, triggerDoor);
+                    }
+
+                }
+            }
+
+        }
+
+    }
+    private void readSpawnPoints(NodeList spawnsTag){
+        for (int i = 0; i < spawnsTag.getLength(); i++) {
+            NodeList childList = spawnsTag.item(i).getChildNodes();
+            for (int j = 0; j < childList.getLength(); j++) {
+                org.w3c.dom.Node childNode = childList.item(j);
+                if (childNode.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
+                    Element element = (Element) childNode;
+                    String name = element.getAttribute("name");
+                    String sceneName = element.getAttribute("scene");
+                    int direction = Integer.parseInt(element.getAttribute("direction"));
+                    SpawnPoint spawnPoint = new SpawnPoint(name, sceneName, direction);
+                    mapSpawnPoint.put(name, spawnPoint);
+                    mapSpawnScene.put(name, mapScenes.get(sceneName));
+
+                }
+            }
+
+        }
     }
 
     private void initializeState(String mapXmlFile) {
