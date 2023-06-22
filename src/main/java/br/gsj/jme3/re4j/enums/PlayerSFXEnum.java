@@ -1,14 +1,14 @@
 package br.gsj.jme3.re4j.enums;
 
-public enum PlayerSFX {
+public enum PlayerSFXEnum {
 
     STEP_L("step_l"),
 
     STEP_R("step_l");
-    
+
     private String step;
 
-    PlayerSFX(String type) {
+    PlayerSFXEnum(String type) {
         this.step = type;
     }
 

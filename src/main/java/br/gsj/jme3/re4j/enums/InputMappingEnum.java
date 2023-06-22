@@ -8,7 +8,7 @@ package br.gsj.jme3.re4j.enums;
  *
  * @author gsjunior
  */
-public class InputMapping {
+public class InputMappingEnum {
 
     public static final String ROTATE_LEFT = "Rotate Left";
     public static final String ROTATE_RIGHT = "Rotate Right";

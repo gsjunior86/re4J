@@ -8,7 +8,7 @@ package br.gsj.jme3.re4j.enums;
  *
  * @author gsjunior
  */
-public enum TriggerTypes {
+public enum TriggerTypesEnum {
     
     SCENE("scene"),
     TEXT("text"),
@@ -16,7 +16,7 @@ public enum TriggerTypes {
     
     private String type;
     
-    TriggerTypes(String type) {
+    TriggerTypesEnum(String type) {
         this.type = type;
     }
     
