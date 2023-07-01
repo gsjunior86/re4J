@@ -116,7 +116,6 @@ public class PreRenderedSceneGameState extends AbstractAppState {
     private final Map<String, SpawnPoint> mapSpawnPoint = new HashMap<String, SpawnPoint>();
     private final Map<String, TriggerText> mapTriggerText = new HashMap<String, TriggerText>();
     private final Map<String, TriggerDoor> mapTriggerDoor = new HashMap<String, TriggerDoor>();
-
     private PlayerSFX playerSFX;
     private String currentMap;
 
@@ -390,7 +389,7 @@ public class PreRenderedSceneGameState extends AbstractAppState {
 
     @Override
     public void setEnabled(boolean enabled) {
-        super.setEnabled(enabled); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/OverriddenMethodBody
+        super.setEnabled(enabled);
     }
 
     @Override
@@ -511,7 +510,7 @@ public class PreRenderedSceneGameState extends AbstractAppState {
         bulletAppState.getPhysicsSpace().add(player);
         playerControl.setEnabled(true);
 
-        playerAnim = new PlayerAnimation(playerAnimComposer, inputManager, assetManager, this);
+        playerAnim = new PlayerAnimation(playerAnimComposer, inputManager, assetManager, this,this.playerSFX);
 
         List<Spatial> frontNode = NodesSpatialsHelper.getSpatialsFromNode((Node) player, "front");
         for (Spatial node : frontNode) {

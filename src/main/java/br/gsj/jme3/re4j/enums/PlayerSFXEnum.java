@@ -4,7 +4,7 @@ public enum PlayerSFXEnum {
 
     STEP_L("step_l"),
 
-    STEP_R("step_l");
+    STEP_R("step_r");
 
     private String step;
 

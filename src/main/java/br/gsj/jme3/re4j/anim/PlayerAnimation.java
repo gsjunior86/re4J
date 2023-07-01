@@ -6,6 +6,7 @@
 package br.gsj.jme3.re4j.anim;
 
 import br.gsj.jme3.re4j.enums.InputMappingEnum;
+import br.gsj.jme3.re4j.sfx.PlayerSFX;
 import br.gsj.jme3.re4j.state.PreRenderedSceneGameState;
 import com.jme3.anim.AnimComposer;
 import com.jme3.anim.tween.Tween;
@@ -47,15 +48,19 @@ public class PlayerAnimation implements ActionListener{
     private final PreRenderedSceneGameState sceneGameState;
     
     
-    public PlayerAnimation(AnimComposer playerAnimComposer, InputManager inputManager,
-            AssetManager assetManager, PreRenderedSceneGameState gameState){
+    public PlayerAnimation(AnimComposer playerAnimComposer,
+                           InputManager inputManager,
+                           AssetManager assetManager,
+                           PreRenderedSceneGameState gameState,
+                           PlayerSFX playerSFX
+                           ){
         
         this.playerAnimComposer = playerAnimComposer;
         this.inputManager = inputManager;
         this.sceneGameState = gameState;
         
-        step1  = new AudioNode(assetManager, "Sounds/sfx/FS01_00001.ogg",DataType.Buffer);
-        step2  = new AudioNode(assetManager, "Sounds/sfx/FS01_00002.ogg",DataType.Buffer);
+        step1  = new AudioNode(assetManager, playerSFX.getStepL(),DataType.Buffer);
+        step2  = new AudioNode(assetManager, playerSFX.getStepR(),DataType.Buffer);
         
         
        //step1.setReverbEnabled(true);
