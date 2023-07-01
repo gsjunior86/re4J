@@ -5,8 +5,9 @@
  */
 package br.gsj.jme3.re4j.anim;
 
-import br.gsj.jme3.re4j.enums.InputMapping;
-import br.gsj.jme3.re4j.state.SceneGameState;
+import br.gsj.jme3.re4j.enums.InputMappingEnum;
+import br.gsj.jme3.re4j.sfx.PlayerSFX;
+import br.gsj.jme3.re4j.state.PreRenderedSceneGameState;
 import com.jme3.anim.AnimComposer;
 import com.jme3.anim.tween.Tween;
 import com.jme3.anim.tween.Tweens;
@@ -44,18 +45,22 @@ public class PlayerAnimation implements ActionListener{
     private boolean forward = false, backward = false,
             leftRotate = false, rightRotate = false,action = false;
     
-    private final SceneGameState sceneGameState;
+    private final PreRenderedSceneGameState sceneGameState;
     
     
-    public PlayerAnimation(AnimComposer playerAnimComposer, InputManager inputManager,
-            AssetManager assetManager, SceneGameState gameState){
+    public PlayerAnimation(AnimComposer playerAnimComposer,
+                           InputManager inputManager,
+                           AssetManager assetManager,
+                           PreRenderedSceneGameState gameState,
+                           PlayerSFX playerSFX
+                           ){
         
         this.playerAnimComposer = playerAnimComposer;
         this.inputManager = inputManager;
         this.sceneGameState = gameState;
         
-        step1  = new AudioNode(assetManager, "Sounds/sfx/FS01_00001.ogg",DataType.Buffer);
-        step2  = new AudioNode(assetManager, "Sounds/sfx/FS01_00002.ogg",DataType.Buffer);
+        step1  = new AudioNode(assetManager, playerSFX.getStepL(),DataType.Buffer);
+        step2  = new AudioNode(assetManager, playerSFX.getStepR(),DataType.Buffer);
         
         
        //step1.setReverbEnabled(true);
@@ -89,32 +94,32 @@ public class PlayerAnimation implements ActionListener{
     
     private void initKeys() {
         
-        inputManager.addMapping(InputMapping.ROTATE_LEFT,
+        inputManager.addMapping(InputMappingEnum.ROTATE_LEFT,
                 new KeyTrigger(KeyInput.KEY_A),
                 new KeyTrigger(KeyInput.KEY_LEFT));
-        inputManager.addMapping(InputMapping.ROTATE_RIGHT,
+        inputManager.addMapping(InputMappingEnum.ROTATE_RIGHT,
                 new KeyTrigger(KeyInput.KEY_D),
                 new KeyTrigger(KeyInput.KEY_RIGHT));
-        inputManager.addMapping(InputMapping.WALK_FORWARD,
+        inputManager.addMapping(InputMappingEnum.WALK_FORWARD,
                 new KeyTrigger(KeyInput.KEY_W),
                 new KeyTrigger(KeyInput.KEY_UP));
-        inputManager.addMapping(InputMapping.WALK_BACKWARD,
+        inputManager.addMapping(InputMappingEnum.WALK_BACKWARD,
                 new KeyTrigger(KeyInput.KEY_S),
                 new KeyTrigger(KeyInput.KEY_DOWN));
-        inputManager.addMapping(InputMapping.ACTION,
+        inputManager.addMapping(InputMappingEnum.ACTION,
                 new KeyTrigger(KeyInput.KEY_X));
         
-        inputManager.addMapping(InputMapping.PAUSE, new Trigger[]{
+        inputManager.addMapping(InputMappingEnum.PAUSE, new Trigger[]{
                 new KeyTrigger(KeyInput.KEY_P),new KeyTrigger(KeyInput.KEY_PAUSE)});
         
 
 
-        inputManager.addListener(this, InputMapping.ROTATE_LEFT);
-        inputManager.addListener(this, InputMapping.ROTATE_RIGHT);
-        inputManager.addListener(this, InputMapping.WALK_FORWARD);
-        inputManager.addListener(this, InputMapping.WALK_BACKWARD);
-        inputManager.addListener(this, InputMapping.ACTION);
-        inputManager.addListener(this, InputMapping.PAUSE);
+        inputManager.addListener(this, InputMappingEnum.ROTATE_LEFT);
+        inputManager.addListener(this, InputMappingEnum.ROTATE_RIGHT);
+        inputManager.addListener(this, InputMappingEnum.WALK_FORWARD);
+        inputManager.addListener(this, InputMappingEnum.WALK_BACKWARD);
+        inputManager.addListener(this, InputMappingEnum.ACTION);
+        inputManager.addListener(this, InputMappingEnum.PAUSE);
        
         
     }
@@ -153,23 +158,23 @@ public class PlayerAnimation implements ActionListener{
             
         if(!sceneGameState.FREE_CAMERA && isKeyPressed){
             switch(binding){
-                case InputMapping.ROTATE_LEFT:
+                case InputMappingEnum.ROTATE_LEFT:
                     playerAnimComposer.setCurrentAction("walkCycle");
                     leftRotate = true;
                     break;
-                case InputMapping.ROTATE_RIGHT:
+                case InputMappingEnum.ROTATE_RIGHT:
                     playerAnimComposer.setCurrentAction("walkCycle");
                     rightRotate = true;
                     break;
-                case InputMapping.WALK_FORWARD:
+                case InputMappingEnum.WALK_FORWARD:
                     playerAnimComposer.setCurrentAction("walkCycle");
                     forward = true;
                     break;
-                case InputMapping.WALK_BACKWARD:
+                case InputMappingEnum.WALK_BACKWARD:
                     playerAnimComposer.setCurrentAction("walkCycle");
                     backward = true;
                     break;
-                case InputMapping.ACTION:
+                case InputMappingEnum.ACTION:
                     action = true;
                     break;
             }

@@ -8,7 +8,7 @@ package br.gsj.jme3.re4j.control;
 import br.gsj.jme3.re4j.anim.PlayerAnimation;
 import br.gsj.jme3.re4j.helpers.NodesSpatialsHelper;
 import br.gsj.jme3.re4j.helpers.SceneChangerHelper;
-import br.gsj.jme3.re4j.state.SceneGameState;
+import br.gsj.jme3.re4j.state.PreRenderedSceneGameState;
 import com.jme3.bullet.collision.PhysicsCollisionEvent;
 import com.jme3.bullet.collision.PhysicsCollisionListener;
 import com.jme3.bullet.collision.shapes.CollisionShape;
@@ -30,7 +30,7 @@ public class TextDisplayControl extends GhostControl implements PhysicsCollision
     private final Node roomNode;
     private final BitmapText hudText;
     private final PlayerAnimation playerAL;
-    private final SceneGameState gameState;
+    private final PreRenderedSceneGameState gameState;
     private float lastFrameTime;
     private boolean isShow = false;
 
@@ -40,7 +40,7 @@ public class TextDisplayControl extends GhostControl implements PhysicsCollision
     
     public TextDisplayControl(String triggerName,String text, Node guiNode,Node roomNode,
             BitmapFont guiFont, PlayerAnimation playerAL,
-            CollisionShape cs, SceneGameState gameState){
+            CollisionShape cs, PreRenderedSceneGameState gameState){
         super(cs);
         this.triggerName = triggerName;
         this.guiNode = guiNode;

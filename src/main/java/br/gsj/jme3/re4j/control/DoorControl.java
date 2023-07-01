@@ -7,16 +7,12 @@ package br.gsj.jme3.re4j.control;
 
 import br.gsj.jme3.re4j.anim.PlayerAnimation;
 import br.gsj.jme3.re4j.helpers.SceneChangerHelper;
-import br.gsj.jme3.re4j.state.SceneGameState;
-import com.jme3.bullet.PhysicsSpace;
+import br.gsj.jme3.re4j.state.PreRenderedSceneGameState;
 import com.jme3.bullet.collision.PhysicsCollisionEvent;
 import com.jme3.bullet.collision.PhysicsCollisionListener;
-import com.jme3.bullet.collision.PhysicsCollisionObject;
 import com.jme3.bullet.collision.shapes.CollisionShape;
 import com.jme3.bullet.control.GhostControl;
 import com.jme3.scene.Node;
-
-import java.util.List;
 
 
 /**
@@ -31,7 +27,7 @@ public class DoorControl extends GhostControl implements PhysicsCollisionListene
     private final DoorSound doorSound;
     private final Node roomNode;
     private final PlayerAnimation playerAL;
-    private SceneGameState gameState;
+    private PreRenderedSceneGameState gameState;
     private boolean isOverlapping;
 
     
@@ -43,7 +39,7 @@ public class DoorControl extends GhostControl implements PhysicsCollisionListene
             String closeSound,
             Node roomNode,
             PlayerAnimation playerAL,
-            CollisionShape cs, SceneGameState gameState){
+            CollisionShape cs, PreRenderedSceneGameState gameState){
         super(cs);
         this.destination = destination;
         this.spawnPoint = spawnPoint;
