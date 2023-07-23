@@ -34,10 +34,11 @@ public class MapElements {
     private final Map<String, TriggerDoor> mapTriggerDoor = new HashMap<String, TriggerDoor>();
     private PlayerSFX playerSFX;
     private String currentMap;
-    private AudioNode backgroundMusic;
-    private final Application application;
+    private static AudioNode backgroundMusic;
+    private Application application;
 
     public MapElements(String xmlFile, Application application){
+        resetElements();
         this.application = application;
         readMapDefinition(xmlFile);
     }
@@ -192,10 +193,6 @@ public class MapElements {
         return playerSFX;
     }
 
-    public Map<String, Scene> getMapScenes() {
-        return mapScenes;
-    }
-
     public Map<String, Scene> getMapSpawnScene() {
         return mapSpawnScene;
     }
@@ -222,5 +219,13 @@ public class MapElements {
 
     public Map<String, TriggerText> getMapTriggerText() {
         return mapTriggerText;
+    }
+
+    private void resetElements(){
+        mapTriggerScene.clear();
+        mapSpawnScene.clear();
+        mapScenes.clear();
+        mapTriggerText.clear();
+        mapTriggerDoor.clear();
     }
 }
