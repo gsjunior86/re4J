@@ -21,14 +21,10 @@ public class Scene {
         this.camRotation = camRotation;
         this.nextScene = nextScene;
     }
-    
-    
 
     public String getName() {
         return name;
     }
-
-
 
     public String getCamLocation() {
         return camLocation;

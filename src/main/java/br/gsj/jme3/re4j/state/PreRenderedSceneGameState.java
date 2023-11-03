@@ -5,6 +5,7 @@ import br.gsj.jme3.re4j.control.DoorControl;
 import br.gsj.jme3.re4j.control.SceneChangerControl;
 import br.gsj.jme3.re4j.control.TextDisplayControl;
 import br.gsj.jme3.re4j.enums.PlayerSFXEnum;
+import br.gsj.jme3.re4j.map.MapElements;
 import br.gsj.jme3.re4j.map.Scene;
 import br.gsj.jme3.re4j.map.SpawnPoint;
 import br.gsj.jme3.re4j.sfx.PlayerSFX;
@@ -64,6 +65,11 @@ import org.xml.sax.SAXException;
 
 /**
  *
+ * This is the main class responsible for orchestrating the camera changes,
+ * player control movement and the management of all objects on scene.
+ *
+ *
+ *
  * @author gsjunior
  */
 public class PreRenderedSceneGameState extends AbstractAppState {
@@ -89,14 +95,10 @@ public class PreRenderedSceneGameState extends AbstractAppState {
     private String mapXmlFile = "";
     private Camera cam;
     public final FlyByCamera flyCam;
-
     public static boolean FREE_CAMERA = false;
-
     private ViewPort preRenderedView;
     private ViewPort modelsView;
-
     private FilterPostProcessor fpp;
-
     private boolean changeMap = false;
     private float waitFadeTotalTime = 0;
     private  final float waitFadeTime = 1200;
@@ -110,14 +112,7 @@ public class PreRenderedSceneGameState extends AbstractAppState {
     private String spawnPoint;
     private String nextMap;
 
-    private final Map<String, TriggerScene> mapTriggerScene = new HashMap<String,TriggerScene>();
-    private final Map<String, Scene> mapScenes = new HashMap<String, Scene>();
-    private final Map<String, Scene> mapSpawnScene = new HashMap<String, Scene>();
-    private final Map<String, SpawnPoint> mapSpawnPoint = new HashMap<String, SpawnPoint>();
-    private final Map<String, TriggerText> mapTriggerText = new HashMap<String, TriggerText>();
-    private final Map<String, TriggerDoor> mapTriggerDoor = new HashMap<String, TriggerDoor>();
-    private PlayerSFX playerSFX;
-    private String currentMap;
+    private MapElements mapElements;
 
     public PreRenderedSceneGameState(int height, int width, FlyByCamera flyCam, Node guiNode, String mapXmlFile, String spawnPoint) {
         this.screenHeight = height;
@@ -144,6 +139,14 @@ public class PreRenderedSceneGameState extends AbstractAppState {
 
     }
 
+    /**
+     * This method changes the current map
+     *
+     * @param destination - The next map
+     * @param nextSpawnPoint - A valid spawnPoint that must exist in the next map
+     *
+     @author gsjunior
+     */
     public void changeMap(String destination, String nextSpawnPoint) {
         changeMap = true;
         openDoor.play();
@@ -152,13 +155,12 @@ public class PreRenderedSceneGameState extends AbstractAppState {
         fade.fadeOut();
     }
 
+    /**
+     * Restart all the components when the map changes
+     *
+     * @author gsjunior
+     */
     public void restart() {
-        mapTriggerScene.clear();
-        mapSpawnScene.clear();
-        mapScenes.clear();
-        mapTriggerText.clear();
-        mapTriggerDoor.clear();
-        mapSpawnPoint.clear();
         bulletAppState.getPhysicsSpace().removeAll(roomNode);
         bulletAppState.getPhysicsSpace().remove(playerControl);
         bulletAppState.getPhysicsSpace().remove(player);
@@ -170,8 +172,6 @@ public class PreRenderedSceneGameState extends AbstractAppState {
         playerControl = null;
         playerAnim = null;
         playerAnimComposer = null;
-        //backgroundMusic.stop();
-        //backgroundMusic = null;
 
         preRenderedView.detachScene(backgroundPicture);
         preRenderedView.removeProcessor(fpp);
@@ -186,167 +186,17 @@ public class PreRenderedSceneGameState extends AbstractAppState {
 
     }
 
-    public Node getRootNode() {
-        return this.roomNode;
-    }
-
     public Node getGuiNode() {
         return this.guiNode;
     }
 
-    private void readMapDefinition(String mapDefinition) {
-
-        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-
-        File xmlFile = new File(this.getClass().getClassLoader().getResource(mapDefinition).getFile());
-
-        try {
-            dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-            // parse XML file
-            DocumentBuilder db = dbf.newDocumentBuilder();
-
-            Document doc = db.parse(xmlFile);
-            doc.getDocumentElement().normalize();
-
-            currentMap = doc.getDocumentElement().getAttribute("map");
-
-            if (backgroundMusic != null) {
-                backgroundMusic.stop();
-            }
-
-            backgroundMusic = new AudioNode(assetManager,
-                    doc.getDocumentElement().getAttribute("music"),
-                    AudioData.DataType.Stream);
-            backgroundMusic.setLooping(true);
-            backgroundMusic.setPositional(false);
-            backgroundMusic.setDirectional(false);
-            backgroundMusic.play();
-            application.getAudioRenderer().setEnvironment(new Environment(new float[]{2, 1.9f, 1f, -1000, -454, 0, 0.40f, 0.83f, 1f, -1646, 0.002f, 0f, 0f, 0f, 53, 0.003f, 0f, 0f, 0f, 0.250f, 0f, 0.250f, 0f, -5f, 5000f, 250f, 0f, 0x3f}));
-
-            NodeList scenesTag = doc.getDocumentElement().getElementsByTagName("scenes");
-            readScenes(scenesTag);
-
-            NodeList sfxTag = doc.getDocumentElement().getElementsByTagName("sfx");
-            readSFX(sfxTag);
-
-            NodeList triggersTag = doc.getDocumentElement().getElementsByTagName("triggers");
-            readTriggers(triggersTag);
-
-            NodeList spawnsTag = doc.getDocumentElement().getElementsByTagName("spawns");
-            readSpawnPoints(spawnsTag);
-
-
-        } catch (ParserConfigurationException | SAXException | IOException e) {
-            e.printStackTrace();
-        }
-
-    }
-
-    private void readSFX(NodeList sfxTag){
-        for (int i = 0; i < sfxTag.getLength(); i++) {
-            NodeList childList= sfxTag.item(i).getChildNodes();
-            String step_l = "";
-            String step_r = "";
-            for (int j = 0; j < childList.getLength(); j++) {
-                org.w3c.dom.Node childNode = childList.item(j);
-                if (childNode.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
-                    Element element = (Element) childNode;
-                    if(element.getAttribute("type").equals(PlayerSFXEnum.STEP_L.getStep()))
-                        step_l = element.getAttribute("src");
-                    else if(element.getAttribute("type").equals(PlayerSFXEnum.STEP_R.getStep()))
-                        step_r = element.getAttribute("src");
-                }
-
-            }
-            playerSFX = new PlayerSFX(step_l,step_r);
-        }
-    }
-
-    private void readScenes(NodeList scenesTag){
-        for (int i = 0; i < scenesTag.getLength(); i++) {
-            NodeList childList = scenesTag.item(i).getChildNodes();
-            for (int j = 0; j < childList.getLength(); j++) {
-                org.w3c.dom.Node childNode = childList.item(j);
-                if (childNode.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
-                    Element element = (Element) childNode;
-                    String name = element.getAttribute("name");
-
-                    Scene scene = new Scene(
-                            name,
-                            element.getElementsByTagName("camLocation").item(0).getTextContent(),
-                            element.getElementsByTagName("camRotation").item(0).getTextContent(),
-                            element.getElementsByTagName("nextScene").item(0).getTextContent()
-                    );
-                    mapScenes.put(name, scene);
-                }
-            }
-        }
-    }
-
-    private void readTriggers(NodeList triggersTag){
-        for (int i = 0; i < triggersTag.getLength(); i++) {
-            NodeList childList = triggersTag.item(i).getChildNodes();
-            for (int j = 0; j < childList.getLength(); j++) {
-                org.w3c.dom.Node childNode = childList.item(j);
-                if (childNode.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
-                    Element element = (Element) childNode;
-                    String name = element.getAttribute("name");
-                    String type = element.getAttribute("type");
-                    String scene = element.getAttribute("scene");
-
-                    if (type.equalsIgnoreCase(TriggerTypesEnum.SCENE.getType())) {
-                        Scene sceneMapped = mapScenes.get(scene);
-                        TriggerScene triggerScene = new TriggerScene(
-                                name,
-                                sceneMapped
-                        );
-                        mapTriggerScene.put(name, triggerScene);
-                    } else if (type.equalsIgnoreCase(TriggerTypesEnum.TEXT.getType())) {
-                        TriggerText triggerText = new TriggerText(name,
-                                element.getElementsByTagName("text").item(0).getTextContent());
-                        mapTriggerText.put(name, triggerText);
-                    } else if (type.equalsIgnoreCase(TriggerTypesEnum.DOOR.getType())) {
-                        TriggerDoor triggerDoor = new TriggerDoor(name,
-                                element.getAttribute("destination"),
-                                element.getAttribute("spawn"),
-                                element.getAttribute("open_sound"),
-                                element.getAttribute("close_sound"));
-                        mapTriggerDoor.put(name, triggerDoor);
-                    }
-
-                }
-            }
-
-        }
-
-    }
-    private void readSpawnPoints(NodeList spawnsTag){
-        for (int i = 0; i < spawnsTag.getLength(); i++) {
-            NodeList childList = spawnsTag.item(i).getChildNodes();
-            for (int j = 0; j < childList.getLength(); j++) {
-                org.w3c.dom.Node childNode = childList.item(j);
-                if (childNode.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
-                    Element element = (Element) childNode;
-                    String name = element.getAttribute("name");
-                    String sceneName = element.getAttribute("scene");
-                    int direction = Integer.parseInt(element.getAttribute("direction"));
-                    SpawnPoint spawnPoint = new SpawnPoint(name, sceneName, direction);
-                    mapSpawnPoint.put(name, spawnPoint);
-                    mapSpawnScene.put(name, mapScenes.get(sceneName));
-
-                }
-            }
-
-        }
-    }
 
     private void initializeState(String mapXmlFile) {
         fade.fadeIn();
-        readMapDefinition(mapXmlFile);
+        mapElements = new MapElements(mapXmlFile,application);
 
-        Scene spawnScene = mapSpawnScene.get(spawnPoint);
+        Scene spawnScene = mapElements.getMapSpawnScene().get(spawnPoint);
         backgroundPicture = setupBackground(spawnScene.getNextScene());
-
 
         preRenderedView.setClearFlags(true, true, true);
         preRenderedView.attachScene(backgroundPicture);
@@ -431,8 +281,6 @@ public class PreRenderedSceneGameState extends AbstractAppState {
 
         int g = 2;
 
-;
-
         if (playerAnim.isLeftRotate()) {
             Quaternion pitch = new Quaternion();
             pitch.fromAngleAxis(FastMath.PI * g / 180, Vector3f.UNIT_Y);
@@ -462,28 +310,15 @@ public class PreRenderedSceneGameState extends AbstractAppState {
             playerControl.setWalkDirection(playerWalkDirection);
         }
 
-
-
     }
 
     private void spawnPlayer(int direction) {
 
-        //rootNode.getChild("claire").removeFromParent();
-
-        /*String charSelection = Utils.charSelection();
-        Node spawnPlayerNode = (Node) rootNode.getChild("player_spawn_1");
-        if(charSelection.equals("Leon")){
-            spawnPlayerNode.getChild("player_claire").removeFromParent();
-            player = spawnPlayerNode.getChild("player_leon");
-        }else if(charSelection.equals("Claire")){
-            spawnPlayerNode.getChild("player_leon").removeFromParent();
-            player = spawnPlayerNode.getChild("player_claire");
-        }*/
         Node spawnPlayerNode = (Node) roomNode.getChild(spawnPoint);
         //spawnPlayerNode.getChild("player_claire").removeFromParent();
         player = spawnPlayerNode.getChild("player_leon");
 
-        for (Entry<String, Scene> spawnPointentry : mapSpawnScene.entrySet()) {
+        for (Entry<String, Scene> spawnPointentry : mapElements.getMapSpawnScene().entrySet()) {
             if (!spawnPointentry.getKey().equals(spawnPoint)) {
                 roomNode.getChild(spawnPointentry.getKey()).removeFromParent();
             }
@@ -510,7 +345,7 @@ public class PreRenderedSceneGameState extends AbstractAppState {
         bulletAppState.getPhysicsSpace().add(player);
         playerControl.setEnabled(true);
 
-        playerAnim = new PlayerAnimation(playerAnimComposer, inputManager, assetManager, this,this.playerSFX);
+        playerAnim = new PlayerAnimation(playerAnimComposer, inputManager, assetManager, this,mapElements.getPlayerSFX());
 
         List<Spatial> frontNode = NodesSpatialsHelper.getSpatialsFromNode((Node) player, "front");
         for (Spatial node : frontNode) {
@@ -550,7 +385,7 @@ public class PreRenderedSceneGameState extends AbstractAppState {
             roomNode.attachChild(camNode);
         }
 
-        currentScene = assetManager.loadModel(currentMap);
+        currentScene = assetManager.loadModel(mapElements.getCurrentMap());
         roomNode.attachChild(currentScene);
 
         SceneChangerHelper.checkAndInsertAlphaOnScene(
@@ -565,7 +400,7 @@ public class PreRenderedSceneGameState extends AbstractAppState {
                 loc,
                 rot);
 
-        spawnPlayer(mapSpawnPoint.get(spawnPoint).getDirection());
+        spawnPlayer(mapElements.getMapSpawnPoint().get(spawnPoint).getDirection());
 
         List<Spatial> listFloors = NodesSpatialsHelper.getSpatialsFromNode(roomNode, "floor");
         List<Spatial> listWalls = NodesSpatialsHelper.getSpatialsFromNode(roomNode, "wall");
@@ -598,10 +433,10 @@ public class PreRenderedSceneGameState extends AbstractAppState {
             bulletAppState.getPhysicsSpace().add(wall.getControl(RigidBodyControl.class));
         }
 
-        for (Entry<String, TriggerScene> entry : mapTriggerScene.entrySet()) {
+        for (Entry<String, TriggerScene> entry : mapElements.getMapTriggerScene().entrySet()) {
             Spatial trigger = NodesSpatialsHelper.getSpatialFromNode(roomNode, entry.getKey());
 
-            TriggerScene triggerScene = mapTriggerScene.get(trigger.getName());
+            TriggerScene triggerScene = mapElements.getMapTriggerScene().get(trigger.getName());
             trigger.setUserData("camLocation", triggerScene.getScene().getCamLocation());
             trigger.setUserData("camRotation", triggerScene.getScene().getCamRotation());
             trigger.setUserData("nextScene", triggerScene.getScene().getNextScene());
@@ -616,12 +451,12 @@ public class PreRenderedSceneGameState extends AbstractAppState {
 
         }
 
-        for (Entry<String, TriggerText> entry : mapTriggerText.entrySet()) {
+        for (Entry<String, TriggerText> entry : mapElements.getMapTriggerText().entrySet()) {
             Spatial trigger = NodesSpatialsHelper.getSpatialFromNode(roomNode, entry.getKey());
             CollisionShape cs = CollisionShapeFactory.createBoxShape(trigger);
             TextDisplayControl tdc
                     = new TextDisplayControl(trigger.getName(),
-                    mapTriggerText.get(trigger.getName()).getText(), guiNode, roomNode,
+                    mapElements.getMapTriggerText().get(trigger.getName()).getText(), guiNode, roomNode,
                     assetManager.loadFont("Interface/Fonts/FiraSansLight.fnt"),
                     playerAnim, cs, this);
             trigger.addControl(tdc);
@@ -630,10 +465,10 @@ public class PreRenderedSceneGameState extends AbstractAppState {
             bulletAppState.getPhysicsSpace().add(trigger.getControl(GhostControl.class));
         }
 
-        for (Entry<String, TriggerDoor> entry : mapTriggerDoor.entrySet()) {
+        for (Entry<String, TriggerDoor> entry : mapElements.getMapTriggerDoor().entrySet()) {
             Spatial trigger = NodesSpatialsHelper.getSpatialFromNode(roomNode, entry.getKey());
             CollisionShape cs = CollisionShapeFactory.createBoxShape(trigger);
-            TriggerDoor td = mapTriggerDoor.get(trigger.getName());
+            TriggerDoor td = mapElements.getMapTriggerDoor().get(trigger.getName());
             DoorControl dc = new DoorControl(trigger.getName(),
                     td.getDestination(),
                     td.getSpawnPoint(),
